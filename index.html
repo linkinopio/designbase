@@ -1,0 +1,2127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DesignBase — Design Decision System</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,500;1,9..144,300&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #F7F6F2;
+    --surface: #FFFFFF;
+    --surface2: #F0EEE8;
+    --border: #E2DFD6;
+    --border-strong: #C8C4B8;
+    --text: #1A1916;
+    --text-2: #6B6760;
+    --text-3: #9B9890;
+    --accent: #2B4EFF;
+    --accent-bg: #EEF1FF;
+    --accent-text: #1A35CC;
+    --green: #1A6B45;
+    --green-bg: #E6F4ED;
+    --amber: #92480A;
+    --amber-bg: #FEF3E2;
+    --red: #A8200D;
+    --red-bg: #FDECEA;
+    --purple: #5B3FAE;
+    --purple-bg: #F0ECFB;
+    --font-display: 'Fraunces', serif;
+    --font-body: 'DM Sans', sans-serif;
+    --font-mono: 'DM Mono', monospace;
+    --r: 8px;
+    --r-lg: 12px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: var(--font-body);
+    background: var(--bg);
+    color: var(--text);
+    font-size: 14px;
+    line-height: 1.6;
+    min-height: 100vh;
+  }
+
+  /* LAYOUT */
+  .app { display: flex; min-height: 100vh; }
+
+  /* SIDEBAR */
+  .sidebar {
+    width: 220px;
+    min-width: 220px;
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    overflow-y: auto;
+  }
+
+  .sidebar-logo {
+    padding: 20px 20px 16px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .logo-mark {
+    font-family: var(--font-display);
+    font-size: 20px;
+    font-weight: 500;
+    color: var(--text);
+    letter-spacing: -0.5px;
+  }
+
+  .logo-mark span { color: var(--accent); }
+
+  .logo-sub {
+    font-size: 11px;
+    color: var(--text-3);
+    font-family: var(--font-mono);
+    margin-top: 2px;
+  }
+
+  .sidebar-nav {
+    padding: 12px 10px;
+    flex: 1;
+  }
+
+  .nav-section-label {
+    font-size: 10px;
+    font-family: var(--font-mono);
+    color: var(--text-3);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    padding: 8px 10px 4px;
+  }
+
+  .nav-item {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    padding: 8px 10px;
+    border-radius: var(--r);
+    cursor: pointer;
+    color: var(--text-2);
+    font-size: 13.5px;
+    font-weight: 400;
+    transition: all 0.12s;
+    user-select: none;
+    border: none;
+    background: none;
+    width: 100%;
+    text-align: left;
+  }
+
+  .nav-item:hover { background: var(--surface2); color: var(--text); }
+  .nav-item.active { background: var(--accent-bg); color: var(--accent-text); font-weight: 500; }
+
+  .nav-item .nav-icon {
+    width: 18px;
+    height: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .nav-count {
+    margin-left: auto;
+    background: var(--surface2);
+    color: var(--text-3);
+    font-size: 11px;
+    font-family: var(--font-mono);
+    padding: 1px 6px;
+    border-radius: 99px;
+  }
+
+  .nav-item.active .nav-count {
+    background: rgba(43, 78, 255, 0.12);
+    color: var(--accent-text);
+  }
+
+  /* MAIN */
+  .main {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* TOPBAR */
+  .topbar {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 12px 28px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+  }
+
+  .search-wrap {
+    flex: 1;
+    max-width: 520px;
+    position: relative;
+  }
+
+  .search-input {
+    width: 100%;
+    height: 36px;
+    padding: 0 12px 0 36px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: var(--r);
+    font-family: var(--font-body);
+    font-size: 13.5px;
+    color: var(--text);
+    outline: none;
+    transition: border-color 0.15s, background 0.15s;
+  }
+
+  .search-input:focus {
+    background: var(--surface);
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(43,78,255,0.1);
+  }
+
+  .search-icon {
+    position: absolute;
+    left: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-3);
+    pointer-events: none;
+  }
+
+  .search-results {
+    position: absolute;
+    top: calc(100% + 6px);
+    left: 0;
+    right: 0;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--r-lg);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+    z-index: 100;
+    max-height: 400px;
+    overflow-y: auto;
+    display: none;
+  }
+
+  .search-results.visible { display: block; }
+
+  .search-result-section {
+    padding: 8px 0;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .search-result-section:last-child { border-bottom: none; }
+
+  .search-result-header {
+    font-size: 10px;
+    font-family: var(--font-mono);
+    color: var(--text-3);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    padding: 4px 14px 6px;
+  }
+
+  .search-result-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 8px 14px;
+    cursor: pointer;
+    transition: background 0.1s;
+  }
+
+  .search-result-item:hover { background: var(--surface2); }
+
+  .search-result-icon {
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+
+  .icon-decision { background: var(--accent-bg); color: var(--accent); }
+  .icon-pattern { background: var(--green-bg); color: var(--green); }
+  .icon-issue { background: var(--amber-bg); color: var(--amber); }
+
+  .search-result-title { font-size: 13px; font-weight: 500; color: var(--text); }
+  .search-result-desc { font-size: 12px; color: var(--text-3); margin-top: 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 340px; }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 0 14px;
+    height: 34px;
+    border-radius: var(--r);
+    font-family: var(--font-body);
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    border: none;
+    transition: all 0.12s;
+    white-space: nowrap;
+  }
+
+  .btn-primary {
+    background: var(--accent);
+    color: white;
+  }
+
+  .btn-primary:hover { background: #1A35CC; }
+
+  .btn-ghost {
+    background: transparent;
+    color: var(--text-2);
+    border: 1px solid var(--border);
+  }
+
+  .btn-ghost:hover { background: var(--surface2); }
+
+  /* PAGE CONTENT */
+  .page-content {
+    padding: 28px;
+    flex: 1;
+  }
+
+  .page { display: none; }
+  .page.active { display: block; }
+
+  /* HOME PAGE */
+  .home-hero {
+    margin-bottom: 32px;
+  }
+
+  .home-title {
+    font-family: var(--font-display);
+    font-size: 32px;
+    font-weight: 300;
+    color: var(--text);
+    letter-spacing: -0.5px;
+    line-height: 1.2;
+    margin-bottom: 6px;
+  }
+
+  .home-title em { font-style: italic; color: var(--accent); }
+
+  .home-sub {
+    color: var(--text-2);
+    font-size: 14px;
+  }
+
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+    margin-bottom: 32px;
+  }
+
+  .stat-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--r-lg);
+    padding: 16px 18px;
+    cursor: pointer;
+    transition: border-color 0.15s, transform 0.15s;
+  }
+
+  .stat-card:hover {
+    border-color: var(--border-strong);
+    transform: translateY(-1px);
+  }
+
+  .stat-label {
+    font-size: 11px;
+    font-family: var(--font-mono);
+    color: var(--text-3);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-bottom: 8px;
+  }
+
+  .stat-number {
+    font-family: var(--font-display);
+    font-size: 30px;
+    font-weight: 300;
+    color: var(--text);
+    letter-spacing: -1px;
+    line-height: 1;
+    margin-bottom: 4px;
+  }
+
+  .stat-change {
+    font-size: 12px;
+    color: var(--text-3);
+  }
+
+  .home-sections {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+  }
+
+  .home-section {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--r-lg);
+    padding: 20px;
+  }
+
+  .home-section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 14px;
+  }
+
+  .home-section-title {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text);
+    font-family: var(--font-mono);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+
+  .home-section-link {
+    font-size: 12px;
+    color: var(--accent);
+    cursor: pointer;
+    text-decoration: none;
+    border: none;
+    background: none;
+    font-family: var(--font-body);
+  }
+
+  .home-section-link:hover { text-decoration: underline; }
+
+  /* CARDS */
+  .card-list { display: flex; flex-direction: column; gap: 8px; }
+
+  .item-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--r-lg);
+    padding: 14px 16px;
+    cursor: pointer;
+    transition: border-color 0.15s;
+  }
+
+  .item-card:hover { border-color: var(--border-strong); }
+
+  .item-card-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 6px;
+  }
+
+  .item-card-title {
+    font-size: 13.5px;
+    font-weight: 500;
+    color: var(--text);
+    line-height: 1.4;
+    flex: 1;
+  }
+
+  .item-card-desc {
+    font-size: 12.5px;
+    color: var(--text-2);
+    line-height: 1.5;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .item-card-meta {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 8px;
+    flex-wrap: wrap;
+  }
+
+  .tag {
+    display: inline-flex;
+    align-items: center;
+    padding: 2px 8px;
+    border-radius: 99px;
+    font-size: 11px;
+    font-family: var(--font-mono);
+    font-weight: 400;
+    background: var(--surface2);
+    color: var(--text-2);
+    border: 1px solid var(--border);
+  }
+
+  .tag-blue { background: var(--accent-bg); color: var(--accent-text); border-color: rgba(43,78,255,0.2); }
+  .tag-green { background: var(--green-bg); color: var(--green); border-color: rgba(26,107,69,0.2); }
+  .tag-amber { background: var(--amber-bg); color: var(--amber); border-color: rgba(146,72,10,0.2); }
+  .tag-red { background: var(--red-bg); color: var(--red); border-color: rgba(168,32,13,0.2); }
+  .tag-purple { background: var(--purple-bg); color: var(--purple); border-color: rgba(91,63,174,0.2); }
+
+  /* STATUS BADGES */
+  .status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 3px 9px;
+    border-radius: 99px;
+    font-size: 11.5px;
+    font-weight: 500;
+    white-space: nowrap;
+  }
+
+  .status-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  .status-approved { background: var(--green-bg); color: var(--green); }
+  .status-approved .status-dot { background: var(--green); }
+  .status-proposed { background: var(--amber-bg); color: var(--amber); }
+  .status-proposed .status-dot { background: var(--amber); }
+  .status-deprecated { background: var(--surface2); color: var(--text-3); }
+  .status-deprecated .status-dot { background: var(--text-3); }
+
+  .priority-high { background: var(--red-bg); color: var(--red); }
+  .priority-medium { background: var(--amber-bg); color: var(--amber); }
+  .priority-low { background: var(--surface2); color: var(--text-2); }
+
+  .status-backlog { background: var(--surface2); color: var(--text-2); }
+  .status-inprogress { background: var(--accent-bg); color: var(--accent-text); }
+  .status-done { background: var(--green-bg); color: var(--green); }
+
+  /* PAGE HEADERS */
+  .page-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: 20px;
+    gap: 16px;
+  }
+
+  .page-title-block { }
+
+  .page-title {
+    font-family: var(--font-display);
+    font-size: 24px;
+    font-weight: 300;
+    letter-spacing: -0.3px;
+    color: var(--text);
+    line-height: 1.2;
+  }
+
+  .page-sub {
+    font-size: 13px;
+    color: var(--text-3);
+    margin-top: 3px;
+  }
+
+  /* FILTERS */
+  .filter-bar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+  }
+
+  .filter-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 5px 11px;
+    border-radius: 99px;
+    font-size: 12.5px;
+    cursor: pointer;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text-2);
+    font-family: var(--font-body);
+    transition: all 0.1s;
+  }
+
+  .filter-chip:hover { border-color: var(--border-strong); color: var(--text); }
+  .filter-chip.active { background: var(--accent); color: white; border-color: var(--accent); }
+
+  /* TABLE */
+  .data-table {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--r-lg);
+    overflow: hidden;
+  }
+
+  .data-table table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  .data-table thead {
+    background: var(--surface2);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .data-table th {
+    padding: 10px 14px;
+    text-align: left;
+    font-size: 11px;
+    font-family: var(--font-mono);
+    color: var(--text-3);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    font-weight: 400;
+  }
+
+  .data-table td {
+    padding: 12px 14px;
+    border-bottom: 1px solid var(--border);
+    font-size: 13px;
+    vertical-align: top;
+  }
+
+  .data-table tr:last-child td { border-bottom: none; }
+
+  .data-table tbody tr {
+    cursor: pointer;
+    transition: background 0.1s;
+  }
+
+  .data-table tbody tr:hover { background: var(--surface2); }
+
+  /* DETAIL VIEW */
+  .detail-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(26,25,22,0.5);
+    z-index: 50;
+    display: none;
+    align-items: flex-start;
+    justify-content: flex-end;
+  }
+
+  .detail-overlay.open { display: flex; }
+
+  .detail-panel {
+    width: 560px;
+    max-width: 90vw;
+    background: var(--surface);
+    height: 100vh;
+    overflow-y: auto;
+    border-left: 1px solid var(--border);
+    animation: slideIn 0.22s ease;
+  }
+
+  @keyframes slideIn {
+    from { transform: translateX(40px); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+  }
+
+  .detail-header {
+    padding: 20px 24px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+    position: sticky;
+    top: 0;
+    background: var(--surface);
+    z-index: 1;
+  }
+
+  .detail-close {
+    width: 28px;
+    height: 28px;
+    border-radius: var(--r);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: var(--text-3);
+    background: none;
+    border: none;
+    font-size: 16px;
+    flex-shrink: 0;
+    transition: background 0.1s;
+  }
+
+  .detail-close:hover { background: var(--surface2); color: var(--text); }
+
+  .detail-body { padding: 24px; }
+
+  .detail-section { margin-bottom: 24px; }
+
+  .detail-section-label {
+    font-size: 10px;
+    font-family: var(--font-mono);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--text-3);
+    margin-bottom: 8px;
+  }
+
+  .detail-text {
+    font-size: 13.5px;
+    color: var(--text);
+    line-height: 1.7;
+    background: var(--surface2);
+    border-radius: var(--r);
+    padding: 12px 14px;
+  }
+
+  .detail-rule {
+    font-size: 14px;
+    color: var(--text);
+    line-height: 1.7;
+    background: var(--accent-bg);
+    border-left: 3px solid var(--accent);
+    border-radius: 0 var(--r) var(--r) 0;
+    padding: 12px 16px;
+  }
+
+  .detail-meta-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+
+  .detail-meta-item {
+    background: var(--surface2);
+    border-radius: var(--r);
+    padding: 10px 12px;
+  }
+
+  .detail-meta-label {
+    font-size: 10px;
+    font-family: var(--font-mono);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--text-3);
+    margin-bottom: 4px;
+  }
+
+  .detail-meta-value {
+    font-size: 13px;
+    color: var(--text);
+    font-weight: 500;
+  }
+
+  /* MODAL (ADD NEW) */
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(26,25,22,0.5);
+    z-index: 60;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+  }
+
+  .modal-overlay.open { display: flex; }
+
+  .modal {
+    background: var(--surface);
+    border-radius: var(--r-lg);
+    width: 100%;
+    max-width: 540px;
+    animation: fadeUp 0.2s ease;
+    border: 1px solid var(--border);
+  }
+
+  @keyframes fadeUp {
+    from { transform: translateY(12px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+  }
+
+  .modal-header {
+    padding: 20px 24px 16px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .modal-title {
+    font-family: var(--font-display);
+    font-size: 18px;
+    font-weight: 300;
+    letter-spacing: -0.2px;
+  }
+
+  .modal-body { padding: 20px 24px; }
+
+  .form-group { margin-bottom: 16px; }
+
+  .form-label {
+    display: block;
+    font-size: 12px;
+    font-family: var(--font-mono);
+    color: var(--text-2);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-bottom: 6px;
+  }
+
+  .form-input {
+    width: 100%;
+    padding: 8px 12px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: var(--r);
+    font-family: var(--font-body);
+    font-size: 13.5px;
+    color: var(--text);
+    outline: none;
+    transition: border-color 0.15s;
+  }
+
+  .form-input:focus {
+    border-color: var(--accent);
+    background: var(--surface);
+    box-shadow: 0 0 0 3px rgba(43,78,255,0.1);
+  }
+
+  textarea.form-input { resize: vertical; min-height: 80px; line-height: 1.5; }
+
+  .form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+
+  .modal-footer {
+    padding: 14px 24px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+  }
+
+  /* EMPTY STATE */
+  .empty-state {
+    text-align: center;
+    padding: 48px 24px;
+    color: var(--text-3);
+  }
+
+  .empty-state-icon {
+    font-size: 32px;
+    margin-bottom: 12px;
+    opacity: 0.4;
+  }
+
+  .empty-state-title {
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--text-2);
+    margin-bottom: 6px;
+  }
+
+  .empty-state-sub { font-size: 13px; }
+
+  /* KANBAN */
+  .kanban-board {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    align-items: start;
+  }
+
+  .kanban-col {
+    background: var(--surface2);
+    border-radius: var(--r-lg);
+    border: 1px solid var(--border);
+    overflow: hidden;
+  }
+
+  .kanban-col-header {
+    padding: 12px 14px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: var(--surface);
+  }
+
+  .kanban-col-title {
+    font-size: 12px;
+    font-family: var(--font-mono);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--text-2);
+    font-weight: 400;
+  }
+
+  .kanban-col-count {
+    font-size: 11px;
+    color: var(--text-3);
+    font-family: var(--font-mono);
+  }
+
+  .kanban-items { padding: 10px; display: flex; flex-direction: column; gap: 8px; }
+
+  .kanban-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--r);
+    padding: 12px 13px;
+    cursor: pointer;
+    transition: border-color 0.15s;
+  }
+
+  .kanban-card:hover { border-color: var(--border-strong); }
+
+  .kanban-card-title {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text);
+    line-height: 1.4;
+    margin-bottom: 8px;
+  }
+
+  .kanban-card-desc {
+    font-size: 12px;
+    color: var(--text-3);
+    line-height: 1.5;
+    margin-bottom: 8px;
+  }
+
+  /* SCROLL */
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 99px; }
+
+  /* RESPONSIVE */
+  @media (max-width: 900px) {
+    .sidebar { width: 180px; min-width: 180px; }
+    .stats-grid { grid-template-columns: repeat(2, 1fr); }
+    .home-sections { grid-template-columns: 1fr; }
+    .kanban-board { grid-template-columns: 1fr; }
+  }
+
+  /* NUMBER BADGE */
+  .num-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    font-size: 10px;
+    font-family: var(--font-mono);
+    background: var(--accent);
+    color: white;
+    flex-shrink: 0;
+  }
+
+  /* RELATED ITEMS */
+  .related-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 4px 10px;
+    border-radius: var(--r);
+    border: 1px solid var(--border);
+    background: var(--surface2);
+    font-size: 12px;
+    color: var(--text-2);
+    cursor: pointer;
+    transition: all 0.1s;
+  }
+
+  .related-chip:hover { border-color: var(--accent); color: var(--accent); }
+
+  /* VIEW TOGGLE */
+  .view-toggle {
+    display: flex;
+    gap: 2px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: var(--r);
+    padding: 3px;
+  }
+
+  .view-btn {
+    padding: 4px 10px;
+    border-radius: 5px;
+    font-size: 12px;
+    cursor: pointer;
+    border: none;
+    background: none;
+    color: var(--text-3);
+    font-family: var(--font-body);
+    transition: all 0.1s;
+  }
+
+  .view-btn.active {
+    background: var(--surface);
+    color: var(--text);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+  }
+
+  .sep { color: var(--border-strong); }
+
+  .date-text {
+    font-size: 11.5px;
+    color: var(--text-3);
+    font-family: var(--font-mono);
+  }
+
+  .inline-meta {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .applies-tag {
+    font-size: 11.5px;
+    color: var(--text-2);
+    font-style: italic;
+  }
+</style>
+</head>
+<body>
+
+<div class="app">
+
+  <!-- SIDEBAR -->
+  <nav class="sidebar">
+    <div class="sidebar-logo">
+      <div class="logo-mark">Design<span>Base</span></div>
+      <div class="logo-sub">v0.1 — UX Knowledge</div>
+    </div>
+    <div class="sidebar-nav">
+      <div class="nav-section-label">Navigate</div>
+      <button class="nav-item active" onclick="showPage('home')">
+        <div class="nav-icon">
+          <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><path d="M7.5 1L1 7h2v7h3v-4h3v4h3V7h2L7.5 1z" stroke="currentColor" stroke-width="1.2" fill="none" stroke-linejoin="round"/></svg>
+        </div>
+        Overview
+      </button>
+      <button class="nav-item" onclick="showPage('decisions')">
+        <div class="nav-icon">
+          <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><rect x="1.5" y="1.5" width="12" height="12" rx="2" stroke="currentColor" stroke-width="1.2"/><path d="M4 5h7M4 8h5M4 11h3" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+        </div>
+        Decisions
+        <span class="nav-count" id="decisions-count">20</span>
+      </button>
+      <button class="nav-item" onclick="showPage('patterns')">
+        <div class="nav-icon">
+          <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><rect x="1" y="1" width="5.5" height="5.5" rx="1" stroke="currentColor" stroke-width="1.2"/><rect x="8.5" y="1" width="5.5" height="5.5" rx="1" stroke="currentColor" stroke-width="1.2"/><rect x="1" y="8.5" width="5.5" height="5.5" rx="1" stroke="currentColor" stroke-width="1.2"/><rect x="8.5" y="8.5" width="5.5" height="5.5" rx="1" stroke="currentColor" stroke-width="1.2"/></svg>
+        </div>
+        Patterns
+        <span class="nav-count" id="patterns-count">8</span>
+      </button>
+      <button class="nav-item" onclick="showPage('issues')">
+        <div class="nav-icon">
+          <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><circle cx="7.5" cy="7.5" r="6" stroke="currentColor" stroke-width="1.2"/><path d="M7.5 4.5v4M7.5 10v1" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+        </div>
+        Issues
+        <span class="nav-count" id="issues-count">7</span>
+      </button>
+
+      <div class="nav-section-label" style="margin-top:16px">Quick Filters</div>
+      <button class="nav-item" onclick="showPageWithFilter('decisions','status','approved')">
+        <div class="nav-icon" style="color:var(--green)">●</div>
+        Approved
+      </button>
+      <button class="nav-item" onclick="showPageWithFilter('issues','priority','High')">
+        <div class="nav-icon" style="color:var(--red)">▲</div>
+        High Priority
+      </button>
+      <button class="nav-item" onclick="showPageWithFilter('issues','status','backlog')">
+        <div class="nav-icon" style="color:var(--text-3)">○</div>
+        Backlog
+      </button>
+    </div>
+  </nav>
+
+  <!-- MAIN -->
+  <div class="main">
+
+    <!-- TOPBAR -->
+    <div class="topbar">
+      <div class="search-wrap" id="search-wrap">
+        <svg class="search-icon" width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="5.5" cy="5.5" r="4" stroke="currentColor" stroke-width="1.3"/><path d="M9 9l3 3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+        <input class="search-input" id="global-search" type="text" placeholder="Search decisions, patterns, issues..." autocomplete="off" oninput="handleSearch(this.value)" onfocus="showSearchResults()" onblur="hideSearchResults()">
+        <div class="search-results" id="search-results"></div>
+      </div>
+      <button class="btn btn-ghost" onclick="openAddModal()">
+        <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M6.5 1v11M1 6.5h11" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+        Add new
+      </button>
+    </div>
+
+    <!-- PAGE CONTENT -->
+    <div class="page-content">
+
+      <!-- HOME -->
+      <div class="page active" id="page-home">
+        <div class="home-hero">
+          <div class="home-title">Your team's<br><em>design knowledge</em> — organised.</div>
+          <div class="home-sub">Decisions · Patterns · Issues — all in one place</div>
+        </div>
+
+        <div class="stats-grid">
+          <div class="stat-card" onclick="showPage('decisions')">
+            <div class="stat-label">Decisions</div>
+            <div class="stat-number" id="stat-decisions">20</div>
+            <div class="stat-change">12 approved · 8 proposed</div>
+          </div>
+          <div class="stat-card" onclick="showPage('patterns')">
+            <div class="stat-label">Patterns</div>
+            <div class="stat-number" id="stat-patterns">8</div>
+            <div class="stat-change">components documented</div>
+          </div>
+          <div class="stat-card" onclick="showPage('issues')">
+            <div class="stat-label">Open Issues</div>
+            <div class="stat-number" id="stat-issues">6</div>
+            <div class="stat-change">2 high priority</div>
+          </div>
+          <div class="stat-card" onclick="showPage('issues')">
+            <div class="stat-label">Last Updated</div>
+            <div class="stat-number" style="font-size:18px; padding-top:4px">29 Mar</div>
+            <div class="stat-change">2026 · 3 changes today</div>
+          </div>
+        </div>
+
+        <div class="home-sections">
+          <div class="home-section">
+            <div class="home-section-header">
+              <div class="home-section-title">Recent Decisions</div>
+              <button class="home-section-link" onclick="showPage('decisions')">View all</button>
+            </div>
+            <div class="card-list" id="home-recent-decisions"></div>
+          </div>
+          <div class="home-section">
+            <div class="home-section-header">
+              <div class="home-section-title">Open Issues</div>
+              <button class="home-section-link" onclick="showPage('issues')">View all</button>
+            </div>
+            <div class="card-list" id="home-open-issues"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- DECISIONS -->
+      <div class="page" id="page-decisions">
+        <div class="page-header">
+          <div class="page-title-block">
+            <div class="page-title">Decisions</div>
+            <div class="page-sub">Source of truth for all design rules and patterns</div>
+          </div>
+          <div style="display:flex;gap:8px;align-items:center">
+            <div class="view-toggle">
+              <button class="view-btn active" id="dec-view-table" onclick="setDecisionView('table')">Table</button>
+              <button class="view-btn" id="dec-view-card" onclick="setDecisionView('card')">Cards</button>
+            </div>
+            <button class="btn btn-primary" onclick="openAddModal('decision')">+ Add Decision</button>
+          </div>
+        </div>
+
+        <div class="filter-bar" id="decisions-filters">
+          <button class="filter-chip active" onclick="filterDecisions('all')">All</button>
+          <button class="filter-chip" onclick="filterDecisions('status','approved')">Approved</button>
+          <button class="filter-chip" onclick="filterDecisions('status','proposed')">Proposed</button>
+          <button class="filter-chip" onclick="filterDecisions('tag','grid')">Grid</button>
+          <button class="filter-chip" onclick="filterDecisions('tag','modal')">Modal</button>
+          <button class="filter-chip" onclick="filterDecisions('tag','input')">Input</button>
+          <button class="filter-chip" onclick="filterDecisions('tag','navigation')">Navigation</button>
+          <button class="filter-chip" onclick="filterDecisions('tag','delete')">Delete</button>
+        </div>
+
+        <div id="decisions-table-view">
+          <div class="data-table">
+            <table>
+              <thead>
+                <tr>
+                  <th style="width:32px">#</th>
+                  <th>Decision</th>
+                  <th>Applies to</th>
+                  <th>Status</th>
+                  <th>Tags</th>
+                  <th>Date</th>
+                </tr>
+              </thead>
+              <tbody id="decisions-table-body"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <div id="decisions-card-view" style="display:none">
+          <div class="card-list" id="decisions-card-list"></div>
+        </div>
+      </div>
+
+      <!-- PATTERNS -->
+      <div class="page" id="page-patterns">
+        <div class="page-header">
+          <div class="page-title-block">
+            <div class="page-title">Patterns</div>
+            <div class="page-sub">Component library and design system reference</div>
+          </div>
+          <button class="btn btn-primary" onclick="openAddModal('pattern')">+ Add Pattern</button>
+        </div>
+
+        <div id="patterns-grid" style="display:grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap:14px;"></div>
+      </div>
+
+      <!-- ISSUES -->
+      <div class="page" id="page-issues">
+        <div class="page-header">
+          <div class="page-title-block">
+            <div class="page-title">Issues &amp; Improvements</div>
+            <div class="page-sub">Track UX bugs, improvements, and discussions</div>
+          </div>
+          <div style="display:flex;gap:8px;align-items:center">
+            <div class="view-toggle">
+              <button class="view-btn active" id="iss-view-kanban" onclick="setIssueView('kanban')">Kanban</button>
+              <button class="view-btn" id="iss-view-list" onclick="setIssueView('list')">List</button>
+            </div>
+            <button class="btn btn-primary" onclick="openAddModal('issue')">+ Add Issue</button>
+          </div>
+        </div>
+
+        <div class="filter-bar">
+          <button class="filter-chip active" onclick="filterIssues('all')" id="iss-filter-all">All</button>
+          <button class="filter-chip" onclick="filterIssues('type','bug')">Bug</button>
+          <button class="filter-chip" onclick="filterIssues('type','improvement')">Improvement</button>
+          <button class="filter-chip" onclick="filterIssues('priority','High')">High priority</button>
+          <button class="filter-chip" onclick="filterIssues('priority','Medium')">Medium</button>
+        </div>
+
+        <div id="issues-kanban-view">
+          <div class="kanban-board" id="kanban-board"></div>
+        </div>
+
+        <div id="issues-list-view" style="display:none">
+          <div class="data-table">
+            <table>
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Issue</th>
+                  <th>Type</th>
+                  <th>Priority</th>
+                  <th>Status</th>
+                  <th>Date</th>
+                </tr>
+              </thead>
+              <tbody id="issues-list-body"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- end page-content -->
+  </div><!-- end main -->
+</div><!-- end app -->
+
+<!-- DETAIL PANEL -->
+<div class="detail-overlay" id="detail-overlay" onclick="closeDetail(event)">
+  <div class="detail-panel" id="detail-panel">
+    <div class="detail-header">
+      <div>
+        <div id="detail-type-badge"></div>
+        <div id="detail-title" style="font-family:var(--font-display);font-size:20px;font-weight:300;margin-top:6px;letter-spacing:-0.3px;"></div>
+      </div>
+      <button class="detail-close" onclick="closeDetailDirect()">✕</button>
+    </div>
+    <div class="detail-body" id="detail-body"></div>
+  </div>
+</div>
+
+<!-- ADD MODAL -->
+<div class="modal-overlay" id="modal-overlay" onclick="closeModal(event)">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-header">
+      <div class="modal-title" id="modal-title">Add Decision</div>
+      <button class="detail-close" onclick="closeModalDirect()">✕</button>
+    </div>
+    <div class="modal-body" id="modal-body"></div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModalDirect()">Cancel</button>
+      <button class="btn btn-primary" onclick="saveItem()">Save</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ─── DATA ───────────────────────────────────────────────────────────────────
+
+let decisions = [
+  {
+    id: 1, title: "HK-Code and Description (Name)", status: "approved",
+    rule: "1. Combining Code and Description: Use a single column to display both code and description only when there are no separate columns available for each. This applies to fields such as production, division, expense, and user (e.g., user code + user name).\n2. Separating Code and Description: Maintain separate columns for code and description when the description is editable.\n3. Column Width Guidelines: Default column width 150px (average). Adjust column width based on content length. If the code is longer than usual, increase accordingly. Example: For an expense field (e.g. 050-0100 Description), use a width of 220px.",
+    context: "Only in HouseKeeping and only apply to the main grids. The pop-up is not applicable.",
+    applies_to: "HouseKeeping main grids",
+    tags: ["grid", "housekeeping", "layout"],
+    date: "9/3/2026", related_patterns: ["Grid", "HousekeepingTable"]
+  },
+  {
+    id: 2, title: "Cancel Button Position", status: "approved",
+    rule: "If we have only one main CTA on the right side, place the cancel next to the primary CTA. If there are more than one CTA on the right side and we need a cancel button to cancel all changes, place the cancel button on the left. Back button should stay on the left.",
+    context: "Overlay and Pop-up modal contexts",
+    applies_to: "Overlay & Pop-up modal",
+    tags: ["modal", "button", "navigation"],
+    date: "9/3/2026", related_patterns: ["Modal", "Overlay"]
+  },
+  {
+    id: 3, title: "Remove Underline in Header CTA Line", status: "approved",
+    rule: "The underline appears only under the tabs and pagination arrows. It does not span the full page width.",
+    context: "Applied to all pages globally",
+    applies_to: "All pages",
+    tags: ["navigation", "typography", "global"],
+    date: "9/3/2026", related_patterns: ["Navigation", "Tabs"]
+  },
+  {
+    id: 4, title: "Delete Function Behaviour", status: "approved",
+    rule: "Since the Delete button is the only option in the 3-dots context menu at the grid level, move the delete function out of the menu. Use a bin icon directly instead. Include a double confirmation step here to maintain consistency with the BD behaviour.",
+    context: "SM-Main Grid level only. Does not apply to other contexts.",
+    applies_to: "SM-Main Grid",
+    tags: ["delete", "grid", "context-menu"],
+    date: "9/3/2026", related_patterns: ["Grid", "ContextMenu"]
+  },
+  {
+    id: 5, title: "Attachment in Context Menu", status: "approved",
+    rule: "Attachment behaviour: if it is the only option in the context menu in view mode, remove it entirely. As we already have a fixed attachment column on the left. Keep it for edit mode because we need that button to open and add attachment for single line.",
+    context: "Applies to all pages where context menus exist",
+    applies_to: "All pages",
+    tags: ["context-menu", "attachment"],
+    date: "10/3/2026", related_patterns: ["ContextMenu"]
+  },
+  {
+    id: 6, title: "Delete Option Position in Context Menu", status: "approved",
+    rule: "Delete option in the context menu should always stay on the bottom.",
+    context: "Universal rule for all context menus",
+    applies_to: "All pages",
+    tags: ["delete", "context-menu", "global"],
+    date: "9/3/2026", related_patterns: ["ContextMenu"]
+  },
+  {
+    id: 7, title: "HK Evolve In-line Editing", status: "approved",
+    rule: "For pages that previously contained a grid with a right-side drawer for editing line details: include those fields directly in the grid and enable inline editing. Unlike Budget Details and Production Details, the primary task here is system configuration, so the interaction should prioritise quick, direct editing within the grid.",
+    context: "HK-Overlay pages only",
+    applies_to: "Hk-Overlay",
+    tags: ["grid", "inline-editing", "housekeeping"],
+    date: "12/3/2026", related_patterns: ["Grid", "InlineEditing"]
+  },
+  {
+    id: 8, title: "Grid Design — Vertical Lines", status: "approved",
+    rule: "We have vertical lines for all types of grids: in header, filter row and main grid.",
+    context: "Universal grid rule for all pages",
+    applies_to: "All pages",
+    tags: ["grid", "global", "visual"],
+    date: "12/3/2026", related_patterns: ["Grid"]
+  },
+  {
+    id: 9, title: "Arrow in Text Field (Dropdown)", status: "approved",
+    rule: "If a text field contains dropdown functionality inside, include the arrow in the field. This applies to all dropdown types, including Broadcaster and Funder which support search, selection, and creation of new entries.",
+    context: "All dropdown types across the application",
+    applies_to: "All dropdown types including Broadcaster and Funder",
+    tags: ["input", "dropdown", "global"],
+    date: "13/03/2026", related_patterns: ["InputField", "Dropdown"]
+  },
+  {
+    id: 10, title: "Description Input Field with 3 Dots", status: "approved",
+    rule: "Add a 3-dot trigger in the description field for both direct typing and modal access. Hide the 3 dots in 'Code & Description' grids since there is plenty of room to type directly in those rows.",
+    context: "Apply to all pages, except grids that exclusively contain codes and descriptions",
+    applies_to: "All pages (except code-only grids)",
+    tags: ["input", "description", "modal"],
+    date: "13/03/2026", related_patterns: ["InputField", "Modal"]
+  },
+  {
+    id: 11, title: "Delete Icon in Grid — Minimum Row Rule", status: "approved",
+    rule: "If the grid requires 1 line to be remaining, disable the icon and apply a tooltip that states 'At least 1 row is required'.",
+    context: "Apply to any grid that requires at least 1 line to remain",
+    applies_to: "Any grid requiring 1 line minimum",
+    tags: ["delete", "grid", "validation"],
+    date: "3/16/2026", related_patterns: ["Grid"]
+  },
+  {
+    id: 12, title: "Show/Shown Filter Component — Use Toggles", status: "approved",
+    rule: "Use toggles instead of checkboxes for all show/hide or filter visibility functions. Applies to: Show only inactive; Show selected only; Show £0 items; Any control that dynamically filters or reveals content.",
+    context: "All pages where show/hide filter controls exist",
+    applies_to: "All pages",
+    tags: ["filter", "toggle", "global"],
+    date: "17/03/2026", related_patterns: ["FilterBar"]
+  },
+  {
+    id: 13, title: "Remove Header in Right Drawer", status: "approved",
+    rule: "The header in the right-hand drawer is redundant. The action label has already been updated from 'Add line' to 'Add Global,' which clearly indicates the function. Repeating this in the header does not add additional value and can be removed to save space.",
+    context: "In Production details, budget details, HK-right drawer",
+    applies_to: "Production details, budget details, HK-right drawer",
+    tags: ["drawer", "layout", "navigation"],
+    date: "17/03/2026", related_patterns: ["Drawer", "Overlay"]
+  },
+  {
+    id: 14, title: "Overlay/Right Drawer Access via Context Menu and Single Click", status: "approved",
+    rule: "Access the overlay via the 'Edit' option in the three-dot menu within the main grid OR just single click on the row — same behaviour as bringing the right-drawer.",
+    context: "All pages with grid rows",
+    applies_to: "All pages",
+    tags: ["navigation", "grid", "interaction"],
+    date: "19/03/2026", related_patterns: ["Grid", "Overlay", "Drawer"]
+  },
+  {
+    id: 15, title: "Colour for Arrow, Calendar, 3 Dots in Text Field", status: "approved",
+    rule: "Use Blue (50) Hex: #657CAF for arrow, 3 dots, and calendar icons in all text fields.",
+    context: "All pages globally",
+    applies_to: "All pages",
+    tags: ["input", "colour", "global", "icon"],
+    date: "20/03/2026", related_patterns: ["InputField"]
+  },
+  {
+    id: 16, title: "Wording for Delete — Lowercase", status: "approved",
+    rule: "Use lowercase: 'calculation type' instead of 'Calculation Type' in delete confirmation wording.",
+    context: "All pages with delete confirmations",
+    applies_to: "All pages",
+    tags: ["delete", "copywriting", "global"],
+    date: "23/03/2026", related_patterns: ["ContextMenu"]
+  },
+  {
+    id: 17, title: "Empty Grid Should Remove Filter Row", status: "approved",
+    rule: "If the grid is empty, display a placeholder message such as 'Add Calculation Type' within the grid area, and hide the filter row.",
+    context: "All Pages: modal, overlay, list page",
+    applies_to: "All Pages: modal, overlay, list page",
+    tags: ["grid", "empty-state", "filter"],
+    date: "25/03/2026", related_patterns: ["Grid", "EmptyState"]
+  },
+  {
+    id: 18, title: "One Click to Access Edit Mode", status: "approved",
+    rule: "Access editing instantly through inline editing, a right drawer, or an overlay — all triggered with one click.",
+    context: "HouseKeeping pages",
+    applies_to: "HK",
+    tags: ["interaction", "editing", "housekeeping"],
+    date: "26/03/2026", related_patterns: ["InlineEditing", "Drawer"]
+  },
+  {
+    id: 19, title: "Filter Row for All Pages", status: "approved",
+    rule: "Keep the filter row for all page's status, empty, or small dataset grid. Applicable for all overlay, pop-up modal or list grid.",
+    context: "Agreed with Dev team",
+    applies_to: "All pages — overlay, pop-up modal or list grid",
+    tags: ["filter", "grid", "global"],
+    date: "26/03/2026", related_patterns: ["Grid", "FilterBar"]
+  },
+  {
+    id: 20, title: "Header Icon Buttons Order", status: "approved",
+    rule: "Order from left to right:\nOriginal: {Search; Filter; Column Picker}; {CTAs}; {3 Dots; Collapse and expand icon}\n\nNewest Order (agreed with dev):\n{Search; Column Picker}; {CTAs}; {3 dots; Collapse and expand icon}\n[Filter 1] [Filter 2] {Filter Icon}",
+    context: "Filter has been moved to a separate row below the header CTA row.",
+    applies_to: "All Pages",
+    tags: ["navigation", "header", "layout", "filter"],
+    date: "27/03/2026", related_patterns: ["Navigation", "FilterBar"]
+  }
+];
+
+let patterns = [
+  { id: 'p1', name: 'Grid', description: 'Data table component used across all list views. Includes inline editing, context menus, filter rows, and vertical dividers.', related_decisions: [1,4,6,7,8,11,17,19], tags: ['data', 'layout'] },
+  { id: 'p2', name: 'Modal', description: 'Pop-up overlay for focused interactions — forms, confirmations, and detail views. Cancel button position follows the CTA count rule.', related_decisions: [2,10], tags: ['overlay', 'navigation'] },
+  { id: 'p3', name: 'Context Menu (3-dots)', description: 'Dropdown menu triggered by a 3-dot icon at the row or grid level. Delete always at the bottom. Attachment shown in edit mode only.', related_decisions: [4,5,6,16], tags: ['interaction', 'delete'] },
+  { id: 'p4', name: 'Input Field', description: 'Text inputs, dropdowns, date pickers, and description fields. Arrow colour is Blue-50 (#657CAF). 3-dot trigger for long descriptions.', related_decisions: [9,10,15], tags: ['form', 'input'] },
+  { id: 'p5', name: 'Navigation', description: 'Header area with ordered icon buttons: Search → Column Picker → CTAs → 3 Dots → Collapse. Filter row sits below the CTA row.', related_decisions: [3,20], tags: ['layout', 'header'] },
+  { id: 'p6', name: 'Filter Bar', description: 'Filter controls below the header. Uses toggles (not checkboxes) for show/hide functions. Filter row persists even for empty grids.', related_decisions: [12,19,20], tags: ['filter', 'interaction'] },
+  { id: 'p7', name: 'Drawer (Right Panel)', description: 'Right-side sliding panel for editing row details. Accessible via single click or "Edit" in context menu. Header title removed to save space.', related_decisions: [13,14,18], tags: ['overlay', 'editing'] },
+  { id: 'p8', name: 'Empty State', description: 'Shown when a grid contains no data. Displays a placeholder message (e.g. "Add Calculation Type") and hides the filter row.', related_decisions: [17], tags: ['feedback', 'grid'] }
+];
+
+let issues = [
+  {
+    id: 1, title: "Browse 3 Dots Context-Awareness", type: "improvement",
+    description: "Make the browse 3 dots more contextual — e.g. note page for notes/comments/description, calendar for date picker, folder for browsing a file. Suggestion from Ibrahim.",
+    priority: "Low", status: "backlog", date: "3/11/2026", related_decision: null
+  },
+  {
+    id: 2, title: "Input Field Font Size Inconsistency", type: "bug",
+    description: "Ensure all font sizes for input fields are correct — some errors in the old detail pages. YP noticed disparity of the labels for input fields not being the same font size in production details side panels.",
+    priority: "High", status: "backlog", date: "3/11/2026", related_decision: 15
+  },
+  {
+    id: 3, title: "Rejected Comments Not Prominent Enough", type: "improvement",
+    description: "Noted from Rob: Rejected Comments needs to be more prominent when user clicks notification banner and is taken to transaction. Rejected comments are in the grid and it is not noticeable. The column is off the page — need to find a way to show the rejected comments at the forefront if the status is 'rejected'.",
+    priority: "Low", status: "backlog", date: "3/16/2026", related_decision: null
+  },
+  {
+    id: 4, title: "Assigning and Unassigning Modal Redesign", type: "improvement",
+    description: "Doesn't make sense the way it is currently designed where the checkbox adds it to the other side — you don't have a clear list of what is assigned and what is unassigned. The left list is a mix of both. Redesign required: item moves from left to right to have 2 clear columns.",
+    priority: "Medium", status: "in-progress", date: "3/18/2026", related_decision: 2
+  },
+  {
+    id: 5, title: "Notification Toast Redesign", type: "improvement",
+    description: "Redesign of the toast has been requested to make it less like the alerts on the bottom right. Alignment stays the same but the background and border colours can change. Discussion with IA-Q regarding this.",
+    priority: "Medium", status: "in-progress", date: "3/18/2026", related_decision: null
+  },
+  {
+    id: 6, title: "Filter Icon — Move Down One Level", type: "improvement",
+    description: "Move filter icon down a level so that on transaction screens we can have the relevant filters within the different tabs. Hierarchy of the information is clearer and also sits inline with where the filters are applied.",
+    priority: "High", status: "done", date: "3/19/2026", related_decision: 20
+  },
+  {
+    id: 7, title: "Input Field Icon Standardisation", type: "improvement",
+    description: "In input fields and line editing the icons (dropdowns, browse, calendars) are all different colours and we need to standardise these to be Blue-300. Now captured as decision #15 (Blue-50 / #657CAF).",
+    priority: "Medium", status: "done", date: "3/20/2026", related_decision: 15
+  }
+];
+
+// ─── STATE ───────────────────────────────────────────────────────────────────
+let currentDecisionFilter = { type: 'all', value: null };
+let currentIssueFilter = { type: 'all', value: null };
+let decisionView = 'table';
+let issueView = 'kanban';
+let addModalType = 'decision';
+
+// ─── RENDER ──────────────────────────────────────────────────────────────────
+
+function init() {
+  updateCounts();
+  renderHomeDecisions();
+  renderHomeIssues();
+  renderDecisionsTable();
+  renderDecisionsCards();
+  renderPatterns();
+  renderKanban();
+  renderIssuesList();
+}
+
+function updateCounts() {
+  document.getElementById('decisions-count').textContent = decisions.length;
+  document.getElementById('patterns-count').textContent = patterns.length;
+  document.getElementById('issues-count').textContent = issues.filter(i => i.status !== 'done').length;
+  document.getElementById('stat-decisions').textContent = decisions.length;
+  document.getElementById('stat-patterns').textContent = patterns.length;
+  document.getElementById('stat-issues').textContent = issues.filter(i => i.status !== 'done').length;
+}
+
+function renderHomeDecisions() {
+  const el = document.getElementById('home-recent-decisions');
+  const recent = [...decisions].sort((a,b) => b.id - a.id).slice(0, 4);
+  el.innerHTML = recent.map(d => `
+    <div class="item-card" onclick="openDetail('decision',${d.id})">
+      <div class="item-card-header">
+        <div class="item-card-title">${d.title}</div>
+        <span class="status-badge status-${d.status}"><span class="status-dot"></span>${d.status}</span>
+      </div>
+      <div class="item-card-meta">
+        ${d.tags.slice(0,3).map(t => `<span class="tag">${t}</span>`).join('')}
+        <span class="date-text">${d.date}</span>
+      </div>
+    </div>
+  `).join('');
+}
+
+function renderHomeIssues() {
+  const el = document.getElementById('home-open-issues');
+  const open = issues.filter(i => i.status !== 'done').slice(0, 4);
+  el.innerHTML = open.map(i => `
+    <div class="item-card" onclick="openDetail('issue',${i.id})">
+      <div class="item-card-header">
+        <div class="item-card-title">${i.title}</div>
+        <span class="status-badge priority-${i.priority.toLowerCase()}">${i.priority}</span>
+      </div>
+      <div class="item-card-meta">
+        <span class="tag">${i.type}</span>
+        <span class="date-text">${i.date}</span>
+      </div>
+    </div>
+  `).join('');
+}
+
+function getFilteredDecisions() {
+  if (currentDecisionFilter.type === 'all') return decisions;
+  if (currentDecisionFilter.type === 'status') return decisions.filter(d => d.status === currentDecisionFilter.value);
+  if (currentDecisionFilter.type === 'tag') return decisions.filter(d => d.tags.includes(currentDecisionFilter.value));
+  return decisions;
+}
+
+function renderDecisionsTable() {
+  const filtered = getFilteredDecisions();
+  const tbody = document.getElementById('decisions-table-body');
+  if (!filtered.length) {
+    tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;padding:40px;color:var(--text-3)">No decisions found</td></tr>`;
+    return;
+  }
+  tbody.innerHTML = filtered.map(d => `
+    <tr onclick="openDetail('decision',${d.id})">
+      <td><span style="font-family:var(--font-mono);font-size:12px;color:var(--text-3)">${String(d.id).padStart(2,'0')}</span></td>
+      <td>
+        <div style="font-weight:500;font-size:13px;margin-bottom:3px">${d.title}</div>
+        <div style="font-size:12px;color:var(--text-3);display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical;overflow:hidden;">${d.rule.split('\n')[0].substring(0,80)}…</div>
+      </td>
+      <td><span class="applies-tag">${d.applies_to}</span></td>
+      <td><span class="status-badge status-${d.status}"><span class="status-dot"></span>${d.status}</span></td>
+      <td>${d.tags.slice(0,3).map(t => `<span class="tag" style="margin-right:3px">${t}</span>`).join('')}</td>
+      <td><span class="date-text">${d.date}</span></td>
+    </tr>
+  `).join('');
+}
+
+function renderDecisionsCards() {
+  const filtered = getFilteredDecisions();
+  const el = document.getElementById('decisions-card-list');
+  el.innerHTML = filtered.map(d => `
+    <div class="item-card" onclick="openDetail('decision',${d.id})">
+      <div class="item-card-header">
+        <div>
+          <div style="font-family:var(--font-mono);font-size:10px;color:var(--text-3);margin-bottom:4px">DECISION #${String(d.id).padStart(2,'0')}</div>
+          <div class="item-card-title">${d.title}</div>
+        </div>
+        <span class="status-badge status-${d.status}"><span class="status-dot"></span>${d.status}</span>
+      </div>
+      <div style="background:var(--accent-bg);border-left:2px solid var(--accent);border-radius:0 6px 6px 0;padding:8px 12px;font-size:12.5px;color:var(--text);line-height:1.5;margin:8px 0;">
+        ${d.rule.split('\n')[0].substring(0,140)}${d.rule.length > 140 ? '…' : ''}
+      </div>
+      <div class="item-card-meta">
+        ${d.tags.map(t => `<span class="tag">${t}</span>`).join('')}
+        <span style="margin-left:auto" class="date-text">${d.date}</span>
+      </div>
+    </div>
+  `).join('');
+}
+
+function renderPatterns() {
+  const el = document.getElementById('patterns-grid');
+  el.innerHTML = patterns.map(p => `
+    <div class="item-card" onclick="openDetail('pattern','${p.id}')" style="height:100%">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+        <div style="font-family:var(--font-display);font-size:18px;font-weight:300;letter-spacing:-0.2px">${p.name}</div>
+        <span class="num-badge">${p.related_decisions.length}</span>
+      </div>
+      <div class="item-card-desc" style="-webkit-line-clamp:3">${p.description}</div>
+      <div class="item-card-meta" style="margin-top:12px">
+        ${p.tags.map(t => `<span class="tag">${t}</span>`).join('')}
+      </div>
+      <div style="margin-top:10px;font-size:11.5px;color:var(--text-3)">
+        ${p.related_decisions.length} linked decision${p.related_decisions.length !== 1 ? 's' : ''}
+      </div>
+    </div>
+  `).join('');
+}
+
+function getFilteredIssues() {
+  if (currentIssueFilter.type === 'all') return issues;
+  if (currentIssueFilter.type === 'type') return issues.filter(i => i.type === currentIssueFilter.value);
+  if (currentIssueFilter.type === 'priority') return issues.filter(i => i.priority === currentIssueFilter.value);
+  if (currentIssueFilter.type === 'status') return issues.filter(i => i.status.replace('-','') === currentIssueFilter.value.replace('-',''));
+  return issues;
+}
+
+function renderKanban() {
+  const filtered = getFilteredIssues();
+  const board = document.getElementById('kanban-board');
+  const cols = [
+    { key: 'backlog', label: 'Backlog', colorClass: 'status-backlog' },
+    { key: 'in-progress', label: 'In Progress', colorClass: 'status-inprogress' },
+    { key: 'done', label: 'Done', colorClass: 'status-done' }
+  ];
+  board.innerHTML = cols.map(col => {
+    const colIssues = filtered.filter(i => i.status === col.key);
+    return `
+      <div class="kanban-col">
+        <div class="kanban-col-header">
+          <span class="kanban-col-title">${col.label}</span>
+          <span class="kanban-col-count">${colIssues.length}</span>
+        </div>
+        <div class="kanban-items">
+          ${colIssues.map(i => `
+            <div class="kanban-card" onclick="openDetail('issue',${i.id})">
+              <div class="kanban-card-title">${i.title}</div>
+              <div class="kanban-card-desc">${i.description.substring(0, 80)}…</div>
+              <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
+                <span class="status-badge priority-${i.priority.toLowerCase()}">${i.priority}</span>
+                <span class="tag">${i.type}</span>
+              </div>
+            </div>
+          `).join('')}
+          ${!colIssues.length ? `<div style="padding:16px;text-align:center;font-size:12px;color:var(--text-3)">No items</div>` : ''}
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function renderIssuesList() {
+  const filtered = getFilteredIssues();
+  const tbody = document.getElementById('issues-list-body');
+  tbody.innerHTML = filtered.map(i => `
+    <tr onclick="openDetail('issue',${i.id})">
+      <td><span style="font-family:var(--font-mono);font-size:12px;color:var(--text-3)">${String(i.id).padStart(2,'0')}</span></td>
+      <td>
+        <div style="font-weight:500;font-size:13px;margin-bottom:2px">${i.title}</div>
+        <div style="font-size:12px;color:var(--text-3);display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical;overflow:hidden;">${i.description.substring(0,80)}…</div>
+      </td>
+      <td><span class="tag">${i.type}</span></td>
+      <td><span class="status-badge priority-${i.priority.toLowerCase()}">${i.priority}</span></td>
+      <td><span class="status-badge status-${i.status === 'in-progress' ? 'inprogress' : i.status}">${i.status}</span></td>
+      <td><span class="date-text">${i.date}</span></td>
+    </tr>
+  `).join('');
+}
+
+// ─── NAVIGATION ──────────────────────────────────────────────────────────────
+
+function showPage(id) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('page-' + id).classList.add('active');
+  const navMap = { home: 0, decisions: 1, patterns: 2, issues: 3 };
+  document.querySelectorAll('.nav-item')[navMap[id]]?.classList.add('active');
+}
+
+function showPageWithFilter(page, filterType, filterValue) {
+  showPage(page);
+  if (page === 'decisions') {
+    filterDecisions(filterType, filterValue);
+  } else if (page === 'issues') {
+    filterIssues(filterType, filterValue);
+  }
+}
+
+function setDecisionView(view) {
+  decisionView = view;
+  document.getElementById('decisions-table-view').style.display = view === 'table' ? 'block' : 'none';
+  document.getElementById('decisions-card-view').style.display = view === 'card' ? 'block' : 'none';
+  document.getElementById('dec-view-table').classList.toggle('active', view === 'table');
+  document.getElementById('dec-view-card').classList.toggle('active', view === 'card');
+}
+
+function setIssueView(view) {
+  issueView = view;
+  document.getElementById('issues-kanban-view').style.display = view === 'kanban' ? 'block' : 'none';
+  document.getElementById('issues-list-view').style.display = view === 'list' ? 'block' : 'none';
+  document.getElementById('iss-view-kanban').classList.toggle('active', view === 'kanban');
+  document.getElementById('iss-view-list').classList.toggle('active', view === 'list');
+}
+
+function filterDecisions(type, value) {
+  currentDecisionFilter = { type, value };
+  document.querySelectorAll('#decisions-filters .filter-chip').forEach(c => c.classList.remove('active'));
+  event.target.classList.add('active');
+  renderDecisionsTable();
+  renderDecisionsCards();
+}
+
+function filterIssues(type, value) {
+  currentIssueFilter = { type, value };
+  renderKanban();
+  renderIssuesList();
+}
+
+// ─── DETAIL ──────────────────────────────────────────────────────────────────
+
+function openDetail(type, id) {
+  const overlay = document.getElementById('detail-overlay');
+  const titleEl = document.getElementById('detail-title');
+  const bodyEl = document.getElementById('detail-body');
+  const badgeEl = document.getElementById('detail-type-badge');
+
+  if (type === 'decision') {
+    const d = decisions.find(x => x.id === id);
+    if (!d) return;
+    badgeEl.innerHTML = `<span class="tag tag-blue">Decision #${String(d.id).padStart(2,'0')}</span>`;
+    titleEl.textContent = d.title;
+    const relatedPatterns = patterns.filter(p => d.related_patterns.includes(p.name));
+    bodyEl.innerHTML = `
+      <div class="detail-section">
+        <div class="detail-section-label">The Rule</div>
+        <div class="detail-rule">${d.rule.replace(/\n/g, '<br>')}</div>
+      </div>
+      <div class="detail-section">
+        <div class="detail-section-label">Context / When to Apply</div>
+        <div class="detail-text">${d.context}</div>
+      </div>
+      <div class="detail-section">
+        <div class="detail-meta-grid">
+          <div class="detail-meta-item">
+            <div class="detail-meta-label">Status</div>
+            <div class="detail-meta-value"><span class="status-badge status-${d.status}"><span class="status-dot"></span>${d.status}</span></div>
+          </div>
+          <div class="detail-meta-item">
+            <div class="detail-meta-label">Date Added</div>
+            <div class="detail-meta-value">${d.date}</div>
+          </div>
+          <div class="detail-meta-item" style="grid-column:span 2">
+            <div class="detail-meta-label">Applies To</div>
+            <div class="detail-meta-value">${d.applies_to}</div>
+          </div>
+        </div>
+      </div>
+      <div class="detail-section">
+        <div class="detail-section-label">Tags</div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap">${d.tags.map(t => `<span class="tag">${t}</span>`).join('')}</div>
+      </div>
+      ${relatedPatterns.length ? `
+      <div class="detail-section">
+        <div class="detail-section-label">Related Patterns</div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap">
+          ${relatedPatterns.map(p => `<span class="related-chip" onclick="openDetail('pattern','${p.id}')">⊞ ${p.name}</span>`).join('')}
+        </div>
+      </div>` : ''}
+    `;
+  } else if (type === 'pattern') {
+    const p = patterns.find(x => x.id === id);
+    if (!p) return;
+    badgeEl.innerHTML = `<span class="tag tag-green">Pattern</span>`;
+    titleEl.textContent = p.name;
+    const relDecisions = decisions.filter(d => p.related_decisions.includes(d.id));
+    bodyEl.innerHTML = `
+      <div class="detail-section">
+        <div class="detail-section-label">Overview</div>
+        <div class="detail-text">${p.description}</div>
+      </div>
+      <div class="detail-section">
+        <div class="detail-section-label">Tags</div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap">${p.tags.map(t => `<span class="tag tag-green">${t}</span>`).join('')}</div>
+      </div>
+      <div class="detail-section">
+        <div class="detail-section-label">Linked Decisions (${relDecisions.length})</div>
+        <div class="card-list">
+          ${relDecisions.map(d => `
+            <div class="item-card" onclick="openDetail('decision',${d.id})" style="padding:10px 14px">
+              <div class="item-card-header">
+                <div class="item-card-title" style="font-size:13px">${d.title}</div>
+                <span class="status-badge status-${d.status}"><span class="status-dot"></span>${d.status}</span>
+              </div>
+              <div class="item-card-desc" style="margin-top:4px;font-size:12px">${d.rule.split('\n')[0].substring(0,100)}…</div>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+    `;
+  } else if (type === 'issue') {
+    const iss = issues.find(x => x.id === id);
+    if (!iss) return;
+    badgeEl.innerHTML = `<span class="tag tag-amber">Issue #${String(iss.id).padStart(2,'0')}</span>`;
+    titleEl.textContent = iss.title;
+    const relDecision = iss.related_decision ? decisions.find(d => d.id === iss.related_decision) : null;
+    bodyEl.innerHTML = `
+      <div class="detail-section">
+        <div class="detail-section-label">Description</div>
+        <div class="detail-text">${iss.description}</div>
+      </div>
+      <div class="detail-section">
+        <div class="detail-meta-grid">
+          <div class="detail-meta-item">
+            <div class="detail-meta-label">Priority</div>
+            <div class="detail-meta-value"><span class="status-badge priority-${iss.priority.toLowerCase()}">${iss.priority}</span></div>
+          </div>
+          <div class="detail-meta-item">
+            <div class="detail-meta-label">Status</div>
+            <div class="detail-meta-value"><span class="status-badge status-${iss.status === 'in-progress' ? 'inprogress' : iss.status}">${iss.status}</span></div>
+          </div>
+          <div class="detail-meta-item">
+            <div class="detail-meta-label">Type</div>
+            <div class="detail-meta-value"><span class="tag">${iss.type}</span></div>
+          </div>
+          <div class="detail-meta-item">
+            <div class="detail-meta-label">Date Added</div>
+            <div class="detail-meta-value">${iss.date}</div>
+          </div>
+        </div>
+      </div>
+      ${relDecision ? `
+      <div class="detail-section">
+        <div class="detail-section-label">Linked Decision</div>
+        <div class="item-card" onclick="openDetail('decision',${relDecision.id})" style="padding:10px 14px">
+          <div class="item-card-header">
+            <div class="item-card-title" style="font-size:13px">${relDecision.title}</div>
+            <span class="status-badge status-${relDecision.status}"><span class="status-dot"></span>${relDecision.status}</span>
+          </div>
+        </div>
+      </div>` : ''}
+    `;
+  }
+
+  overlay.classList.add('open');
+}
+
+function closeDetail(e) {
+  if (e.target === document.getElementById('detail-overlay')) {
+    document.getElementById('detail-overlay').classList.remove('open');
+  }
+}
+
+function closeDetailDirect() {
+  document.getElementById('detail-overlay').classList.remove('open');
+}
+
+// ─── ADD MODAL ────────────────────────────────────────────────────────────────
+
+function openAddModal(type) {
+  addModalType = type || 'decision';
+  const modalTitle = document.getElementById('modal-title');
+  const modalBody = document.getElementById('modal-body');
+
+  if (addModalType === 'decision') {
+    modalTitle.textContent = 'Add Decision';
+    modalBody.innerHTML = `
+      <div class="form-group">
+        <label class="form-label">Title</label>
+        <input class="form-input" id="new-title" type="text" placeholder="e.g. Cancel Button Position">
+      </div>
+      <div class="form-group">
+        <label class="form-label">The Rule</label>
+        <textarea class="form-input" id="new-rule" placeholder="Describe the design rule clearly..."></textarea>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Context / When to Apply</label>
+        <input class="form-input" id="new-context" type="text" placeholder="e.g. All pages with modals">
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Status</label>
+          <select class="form-input" id="new-status">
+            <option value="proposed">Proposed</option>
+            <option value="approved">Approved</option>
+            <option value="deprecated">Deprecated</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Applies To</label>
+          <input class="form-input" id="new-applies" type="text" placeholder="e.g. All pages">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Tags (comma-separated)</label>
+        <input class="form-input" id="new-tags" type="text" placeholder="e.g. grid, modal, input">
+      </div>
+    `;
+  } else if (addModalType === 'issue') {
+    modalTitle.textContent = 'Add Issue';
+    modalBody.innerHTML = `
+      <div class="form-group">
+        <label class="form-label">Title</label>
+        <input class="form-input" id="new-title" type="text" placeholder="e.g. Filter icon misaligned on mobile">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Description</label>
+        <textarea class="form-input" id="new-desc" placeholder="Describe the issue or improvement..."></textarea>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Type</label>
+          <select class="form-input" id="new-type">
+            <option value="bug">Bug</option>
+            <option value="improvement">Improvement</option>
+            <option value="discussion">Discussion</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Priority</label>
+          <select class="form-input" id="new-priority">
+            <option value="Low">Low</option>
+            <option value="Medium">Medium</option>
+            <option value="High">High</option>
+          </select>
+        </div>
+      </div>
+    `;
+  } else if (addModalType === 'pattern') {
+    modalTitle.textContent = 'Add Pattern';
+    modalBody.innerHTML = `
+      <div class="form-group">
+        <label class="form-label">Pattern Name</label>
+        <input class="form-input" id="new-title" type="text" placeholder="e.g. Toast Notification">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Description</label>
+        <textarea class="form-input" id="new-desc" placeholder="Describe how this pattern works..."></textarea>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Tags (comma-separated)</label>
+        <input class="form-input" id="new-tags" type="text" placeholder="e.g. feedback, notification">
+      </div>
+    `;
+  }
+
+  document.getElementById('modal-overlay').classList.add('open');
+}
+
+function saveItem() {
+  const titleEl = document.getElementById('new-title');
+  if (!titleEl || !titleEl.value.trim()) { titleEl?.focus(); return; }
+
+  const today = new Date();
+  const dateStr = `${today.getMonth()+1}/${today.getDate()}/${today.getFullYear()}`;
+
+  if (addModalType === 'decision') {
+    const newD = {
+      id: Math.max(...decisions.map(d => d.id)) + 1,
+      title: titleEl.value.trim(),
+      rule: document.getElementById('new-rule')?.value || '',
+      context: document.getElementById('new-context')?.value || '',
+      applies_to: document.getElementById('new-applies')?.value || 'All pages',
+      status: document.getElementById('new-status')?.value || 'proposed',
+      tags: (document.getElementById('new-tags')?.value || '').split(',').map(t => t.trim()).filter(Boolean),
+      date: dateStr,
+      related_patterns: []
+    };
+    decisions.push(newD);
+    renderHomeDecisions();
+    renderDecisionsTable();
+    renderDecisionsCards();
+  } else if (addModalType === 'issue') {
+    const newI = {
+      id: Math.max(...issues.map(i => i.id)) + 1,
+      title: titleEl.value.trim(),
+      description: document.getElementById('new-desc')?.value || '',
+      type: document.getElementById('new-type')?.value || 'improvement',
+      priority: document.getElementById('new-priority')?.value || 'Medium',
+      status: 'backlog',
+      date: dateStr,
+      related_decision: null
+    };
+    issues.push(newI);
+    renderHomeIssues();
+    renderKanban();
+    renderIssuesList();
+  } else if (addModalType === 'pattern') {
+    const newP = {
+      id: 'p' + (patterns.length + 1),
+      name: titleEl.value.trim(),
+      description: document.getElementById('new-desc')?.value || '',
+      tags: (document.getElementById('new-tags')?.value || '').split(',').map(t => t.trim()).filter(Boolean),
+      related_decisions: []
+    };
+    patterns.push(newP);
+    renderPatterns();
+  }
+
+  updateCounts();
+  closeModalDirect();
+}
+
+function closeModal(e) {
+  if (e.target === document.getElementById('modal-overlay')) closeModalDirect();
+}
+
+function closeModalDirect() {
+  document.getElementById('modal-overlay').classList.remove('open');
+}
+
+// ─── SEARCH ──────────────────────────────────────────────────────────────────
+
+let searchTimer = null;
+
+function handleSearch(q) {
+  clearTimeout(searchTimer);
+  searchTimer = setTimeout(() => runSearch(q), 150);
+}
+
+function runSearch(q) {
+  const resultsEl = document.getElementById('search-results');
+  if (!q.trim()) { resultsEl.classList.remove('visible'); return; }
+
+  const lq = q.toLowerCase();
+  const matchedDecisions = decisions.filter(d =>
+    d.title.toLowerCase().includes(lq) ||
+    d.rule.toLowerCase().includes(lq) ||
+    d.tags.some(t => t.toLowerCase().includes(lq))
+  ).slice(0, 4);
+
+  const matchedPatterns = patterns.filter(p =>
+    p.name.toLowerCase().includes(lq) ||
+    p.description.toLowerCase().includes(lq) ||
+    p.tags.some(t => t.toLowerCase().includes(lq))
+  ).slice(0, 3);
+
+  const matchedIssues = issues.filter(i =>
+    i.title.toLowerCase().includes(lq) ||
+    i.description.toLowerCase().includes(lq)
+  ).slice(0, 3);
+
+  const total = matchedDecisions.length + matchedPatterns.length + matchedIssues.length;
+
+  if (!total) {
+    resultsEl.innerHTML = `<div style="padding:20px;text-align:center;color:var(--text-3);font-size:13px">No results for "${q}"</div>`;
+    resultsEl.classList.add('visible');
+    return;
+  }
+
+  let html = '';
+
+  if (matchedDecisions.length) {
+    html += `<div class="search-result-section">
+      <div class="search-result-header">Decisions</div>
+      ${matchedDecisions.map(d => `
+        <div class="search-result-item" onmousedown="openDetail('decision',${d.id});document.getElementById('global-search').blur()">
+          <div class="search-result-icon icon-decision">◈</div>
+          <div>
+            <div class="search-result-title">${d.title}</div>
+            <div class="search-result-desc">${d.rule.split('\n')[0].substring(0,80)}</div>
+          </div>
+        </div>
+      `).join('')}
+    </div>`;
+  }
+
+  if (matchedPatterns.length) {
+    html += `<div class="search-result-section">
+      <div class="search-result-header">Patterns</div>
+      ${matchedPatterns.map(p => `
+        <div class="search-result-item" onmousedown="openDetail('pattern','${p.id}');document.getElementById('global-search').blur()">
+          <div class="search-result-icon icon-pattern">⊞</div>
+          <div>
+            <div class="search-result-title">${p.name}</div>
+            <div class="search-result-desc">${p.description.substring(0,80)}</div>
+          </div>
+        </div>
+      `).join('')}
+    </div>`;
+  }
+
+  if (matchedIssues.length) {
+    html += `<div class="search-result-section">
+      <div class="search-result-header">Issues</div>
+      ${matchedIssues.map(i => `
+        <div class="search-result-item" onmousedown="openDetail('issue',${i.id});document.getElementById('global-search').blur()">
+          <div class="search-result-icon icon-issue">!</div>
+          <div>
+            <div class="search-result-title">${i.title}</div>
+            <div class="search-result-desc">${i.description.substring(0,80)}</div>
+          </div>
+        </div>
+      `).join('')}
+    </div>`;
+  }
+
+  resultsEl.innerHTML = html;
+  resultsEl.classList.add('visible');
+}
+
+function showSearchResults() {
+  const q = document.getElementById('global-search').value;
+  if (q.trim()) runSearch(q);
+}
+
+function hideSearchResults() {
+  setTimeout(() => {
+    document.getElementById('search-results').classList.remove('visible');
+  }, 200);
+}
+
+// ─── INIT ────────────────────────────────────────────────────────────────────
+init();
+</script>
+</body>
+</html>
