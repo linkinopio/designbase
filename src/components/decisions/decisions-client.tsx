@@ -151,6 +151,7 @@ export function DecisionsClient({ initialDecisions, patterns, tags, user }: Prop
 
         <DecisionList
           decisions={filtered}
+          onView={handleEdit}
           onEdit={handleEdit}
           onDeleted={handleDeleted}
           emptyMessage={
