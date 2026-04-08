@@ -1,9 +1,26 @@
 import type { Metadata } from 'next'
-import { Geist } from 'next/font/google'
+import { Fraunces, DM_Sans, DM_Mono } from 'next/font/google'
 import './globals.css'
 import { Toaster } from '@/components/ui/sonner'
 
-const geist = Geist({ subsets: ['latin'] })
+const fraunces = Fraunces({
+  subsets: ['latin'],
+  variable: '--font-fraunces',
+  display: 'swap',
+})
+
+const dmSans = DM_Sans({
+  subsets: ['latin'],
+  variable: '--font-dm-sans',
+  display: 'swap',
+})
+
+const dmMono = DM_Mono({
+  subsets: ['latin'],
+  weight: ['300', '400', '500'],
+  variable: '--font-dm-mono',
+  display: 'swap',
+})
 
 export const metadata: Metadata = {
   title: 'DesignBase',
@@ -17,7 +34,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className="h-full">
-      <body className={`${geist.className} h-full antialiased`}>
+      <body className={`${fraunces.variable} ${dmSans.variable} ${dmMono.variable} h-full antialiased`}>
         {children}
         <Toaster richColors position="bottom-left" />
       </body>

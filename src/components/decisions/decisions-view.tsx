@@ -6,13 +6,13 @@ import { DecisionList } from '@/components/decisions/decision-list'
 import { DecisionDialog } from '@/components/decisions/decision-dialog'
 import { DecisionDetailSheet } from '@/components/decisions/decision-detail-sheet'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Plus, Search } from 'lucide-react'
+import { Plus } from 'lucide-react'
 
 interface Props {
   decisions: DecisionWithTags[]
   patterns: Pattern[]
   tags: Tag[]
+  search: string
   onDecisionSaved: (d: DecisionWithTags) => void
   onDecisionDeleted: (id: string) => void
   onPatternCreated: (p: Pattern) => void
@@ -31,6 +31,7 @@ export function DecisionsView({
   decisions,
   patterns,
   tags,
+  search,
   onDecisionSaved,
   onDecisionDeleted,
   onPatternCreated,
@@ -40,12 +41,15 @@ export function DecisionsView({
   const [editingDecision, setEditingDecision] = useState<DecisionWithTags | null>(null)
   const [detailDecision, setDetailDecision] = useState<DecisionWithTags | null>(null)
   const [detailOpen, setDetailOpen] = useState(false)
-  const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState<FilterStatus>('all')
+  const [patternFilter, setPatternFilter] = useState<string | null>(null)
+  const [tagFilter, setTagFilter] = useState<string | null>(null)
 
   const filtered = useMemo(() => {
     let result = decisions
     if (statusFilter !== 'all') result = result.filter((d) => d.status === statusFilter)
+    if (patternFilter) result = result.filter((d) => d.patterns?.some((p) => p.id === patternFilter))
+    if (tagFilter) result = result.filter((d) => d.tags?.some((t) => t.id === tagFilter))
     if (search.trim()) {
       const q = search.toLowerCase()
       result = result.filter(
@@ -57,7 +61,7 @@ export function DecisionsView({
       )
     }
     return result
-  }, [decisions, statusFilter, search])
+  }, [decisions, statusFilter, patternFilter, tagFilter, search])
 
   const counts = useMemo(() => ({
     all: decisions.length,
@@ -80,9 +84,7 @@ export function DecisionsView({
   function handleSaved(decision: DecisionWithTags) {
     onDecisionSaved(decision)
     setDialogOpen(false)
-    // Update detail overlay immediately with fresh data
     if (detailDecision?.id === decision.id) setDetailDecision(decision)
-    // Clear after a tick so the dialog close animation sees stable decision prop
     setTimeout(() => setEditingDecision(null), 200)
   }
 
@@ -96,47 +98,34 @@ export function DecisionsView({
     setDialogOpen(true)
   }
 
-  return (
-    <div className="w-full px-6 py-8 flex flex-col gap-6">
+  const isFiltered = search || statusFilter !== 'all' || patternFilter || tagFilter
 
-      {/* ── Page header ─────────────────────────── */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-xl font-semibold tracking-tight">Design Decisions</h1>
-          <p className="text-sm text-muted-foreground mt-0.5">
+  return (
+    <div className="w-full px-6 py-8 flex flex-col gap-5">
+
+      {/* ── Top bar: title + status tabs + button ── */}
+      <div className="flex items-center gap-4">
+        <div className="flex flex-col gap-1 shrink-0">
+          <h1 className="text-[30px] font-light tracking-[-0.3px]">Design Decisions</h1>
+          <p className="text-sm text-muted-foreground">
             {decisions.length} decision{decisions.length !== 1 ? 's' : ''}
           </p>
         </div>
-        <Button onClick={() => { setEditingDecision(null); setDialogOpen(true) }} className="gap-1.5 shrink-0">
-          <Plus className="h-4 w-4" />
-          New Decision
-        </Button>
-      </div>
 
-      {/* ── Filters row ─────────────────────────── */}
-      <div className="flex items-center gap-3 flex-wrap">
-        <div className="relative w-64">
-          <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
-          <Input
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search decisions…"
-            className="pl-8"
-          />
-        </div>
-        <div className="flex items-center gap-1 rounded-lg border border-border bg-muted/40 p-1">
+        {/* Status tabs */}
+        <div className="flex items-center gap-1 rounded-lg border border-[#E2DDD5] bg-muted/30 p-1">
           {STATUS_TABS.map((tab) => (
             <button
               key={tab.value}
               onClick={() => setStatusFilter(tab.value)}
-              className={`px-3 py-1 rounded-md text-sm font-medium transition-colors whitespace-nowrap ${
+              className={`px-3 py-2 rounded-md text-sm font-medium transition-all duration-150 ease-in-out whitespace-nowrap cursor-pointer ${
                 statusFilter === tab.value
-                  ? 'bg-background text-foreground shadow-sm ring-1 ring-foreground/10'
-                  : 'text-muted-foreground hover:text-foreground'
+                  ? 'bg-white text-foreground shadow-sm ring-1 ring-foreground/10'
+                  : 'text-muted-foreground hover:text-foreground hover:bg-white/60'
               }`}
             >
               {tab.label}
-              <span className={`ml-1.5 text-xs tabular-nums ${
+              <span className={`ml-1.5 font-mono text-xs tabular-nums ${
                 statusFilter === tab.value ? 'text-muted-foreground' : 'text-muted-foreground/60'
               }`}>
                 {counts[tab.value]}
@@ -144,10 +133,53 @@ export function DecisionsView({
             </button>
           ))}
         </div>
+
+        <Button onClick={() => { setEditingDecision(null); setDialogOpen(true) }} className="gap-1.5 shrink-0 ml-auto">
+          <Plus className="h-4 w-4" />
+          New Decision
+        </Button>
       </div>
 
-      {(search || statusFilter !== 'all') && (
-        <p className="text-sm text-muted-foreground -mt-2">
+      {/* ── Pattern filter row ───────────────────── */}
+      {patternsByFrequency.length > 0 && (
+        <div className="flex flex-wrap gap-1.5">
+          <FilterPill
+            label="All"
+            active={patternFilter === null}
+            onClick={() => setPatternFilter(null)}
+          />
+          {patternsByFrequency.map((p) => (
+            <FilterPill
+              key={p.id}
+              label={p.name}
+              active={patternFilter === p.id}
+              onClick={() => setPatternFilter(patternFilter === p.id ? null : p.id)}
+            />
+          ))}
+        </div>
+      )}
+
+      {/* ── Tag filter row ───────────────────────── */}
+      {tagsByFrequency.length > 0 && (
+        <div className="flex flex-wrap gap-1.5">
+          <FilterPill
+            label="All"
+            active={tagFilter === null}
+            onClick={() => setTagFilter(null)}
+          />
+          {tagsByFrequency.map((t) => (
+            <FilterPill
+              key={t.id}
+              label={t.name}
+              active={tagFilter === t.id}
+              onClick={() => setTagFilter(tagFilter === t.id ? null : t.id)}
+            />
+          ))}
+        </div>
+      )}
+
+      {isFiltered && (
+        <p className="text-sm text-muted-foreground">
           Showing {filtered.length} of {decisions.length} decision{decisions.length !== 1 ? 's' : ''}
           {search && <> matching &ldquo;<strong className="text-foreground">{search}</strong>&rdquo;</>}
         </p>
@@ -158,7 +190,7 @@ export function DecisionsView({
         onView={openDetail}
         onEdit={openEdit}
         onDeleted={onDecisionDeleted}
-        emptyMessage={search || statusFilter !== 'all' ? 'No decisions match your filters.' : undefined}
+        emptyMessage={isFiltered ? 'No decisions match your filters.' : undefined}
       />
 
       <DecisionDetailSheet
@@ -183,5 +215,21 @@ export function DecisionsView({
         onSaved={handleSaved}
       />
     </div>
+  )
+}
+
+function FilterPill({ label, active, onClick }: { label: string; active: boolean; onClick: () => void }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={`px-2.5 py-1.5 rounded-full text-xs font-medium border transition-all duration-150 ease-in-out whitespace-nowrap cursor-pointer ${
+        active
+          ? 'bg-foreground text-background border-foreground hover:bg-foreground/85'
+          : 'bg-white text-muted-foreground border-[#E2DDD5] hover:bg-[#F0EEE8] hover:border-foreground/25 hover:text-foreground'
+      }`}
+    >
+      {label}
+    </button>
   )
 }

@@ -73,13 +73,13 @@ export function PatternDetailSheet({ pattern, allDecisions, open, onOpenChange, 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent className="w-full sm:max-w-lg flex flex-col gap-0 p-0">
-        <SheetHeader className="px-6 pt-6 pb-4 border-b border-border">
-          <SheetTitle className="text-base font-semibold">{pattern.name}</SheetTitle>
+        <SheetHeader className="px-6 pt-6 pb-4 border-b border-border gap-2">
+          <SheetTitle className="font-sans text-base font-semibold">{pattern.name}</SheetTitle>
           {pattern.description && (
-            <p className="text-sm text-muted-foreground mt-1">{pattern.description}</p>
+            <p className="text-sm text-muted-foreground">{pattern.description}</p>
           )}
           {pattern.tags.length > 0 && (
-            <div className="flex flex-wrap gap-1.5 mt-3">
+            <div className="flex flex-wrap gap-1.5">
               {pattern.tags.map((t) => (
                 <span key={t.id} className="inline-flex items-center px-2 py-0.5 rounded-full text-xs bg-accent-blue-bg text-primary border border-primary/15">
                   {t.name}
@@ -105,7 +105,7 @@ export function PatternDetailSheet({ pattern, allDecisions, open, onOpenChange, 
             {/* Linked decisions */}
             {linked.length > 0 && (
               <div className="flex flex-col gap-2">
-                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                <p className="font-mono text-xs font-medium text-muted-foreground uppercase tracking-wide">
                   Linked · {pattern.decisions.length}
                 </p>
                 <div className="flex flex-col gap-1.5">
@@ -115,9 +115,9 @@ export function PatternDetailSheet({ pattern, allDecisions, open, onOpenChange, 
                       className="flex items-start gap-3 p-3 rounded-lg bg-muted/40 border border-border cursor-pointer hover:bg-muted/70 transition-colors"
                       onClick={() => onViewDecision(d)}
                     >
-                      <div className="flex-1 min-w-0">
+                      <div className="flex flex-col gap-0.5 flex-1 min-w-0">
                         <p className="text-sm font-medium leading-snug line-clamp-1">{d.title}</p>
-                        <p className="text-xs text-muted-foreground mt-0.5 line-clamp-1">{d.description}</p>
+                        <p className="text-xs text-muted-foreground line-clamp-1">{d.description}</p>
                       </div>
                       <Button
                         variant="ghost"
@@ -138,7 +138,7 @@ export function PatternDetailSheet({ pattern, allDecisions, open, onOpenChange, 
             {/* Unlinked decisions */}
             {unlinked.length > 0 && (
               <div className="flex flex-col gap-2">
-                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                <p className="font-mono text-xs font-medium text-muted-foreground uppercase tracking-wide">
                   Available to link
                 </p>
                 <div className="flex flex-col gap-1.5">

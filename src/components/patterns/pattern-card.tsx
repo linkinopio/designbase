@@ -54,7 +54,7 @@ export function PatternCard({ pattern, seenIds, onClick, onEdit, onDeleted }: Pr
   return (
     <>
       <div
-        className="group relative flex flex-col rounded-xl bg-card ring-1 ring-foreground/10 overflow-hidden hover:ring-foreground/20 hover:shadow-md transition-all cursor-pointer"
+        className="group relative flex flex-col rounded-xl bg-card ring-1 ring-foreground/10 overflow-hidden hover:ring-foreground/20 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-150 ease-in-out cursor-pointer"
         onClick={onClick}
       >
         {/* Amber unread badge — top right, only when there are unseen decisions */}
@@ -67,7 +67,7 @@ export function PatternCard({ pattern, seenIds, onClick, onEdit, onDeleted }: Pr
         {/* Body */}
         <div className="flex flex-col gap-3 p-5 flex-1">
           {/* Header row */}
-          <div className="flex items-start justify-between gap-2 pr-9">
+          <div className="flex items-center justify-between gap-2">
             <h3 className="font-semibold text-base leading-snug line-clamp-2 flex-1">
               {pattern.name}
             </h3>
@@ -77,7 +77,7 @@ export function PatternCard({ pattern, seenIds, onClick, onEdit, onDeleted }: Pr
                   <Button
                     variant="ghost"
                     size="icon-sm"
-                    className="absolute top-3 right-10 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity"
+                    className="shrink-0 opacity-0 group-hover:opacity-100 transition-opacity"
                   />
                 }
                 onClick={(e) => e.stopPropagation()}
@@ -109,7 +109,7 @@ export function PatternCard({ pattern, seenIds, onClick, onEdit, onDeleted }: Pr
           )}
 
           {/* Linked decisions count */}
-          <p className="text-xs text-muted-foreground mt-auto pt-2">
+          <p className="text-xs text-muted-foreground mt-auto">
             {count === 0
               ? 'No linked decisions'
               : `${count} linked decision${count !== 1 ? 's' : ''}`}

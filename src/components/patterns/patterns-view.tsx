@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useCallback, useEffect } from 'react'
+import { useState, useCallback, useMemo } from 'react'
 import type { PatternWithDecisions, DecisionWithTags, Pattern, Tag } from '@/lib/types'
 import { createPattern, updatePattern } from '@/lib/actions/patterns'
 import { PatternCard } from '@/components/patterns/pattern-card'
@@ -47,11 +47,12 @@ function useSeenDecisions() {
 interface Props {
   patterns: PatternWithDecisions[]
   allDecisions: DecisionWithTags[]
+  search: string
   onPatternCreated: (p: Pattern) => void
   onPatternsChanged: (patterns: PatternWithDecisions[]) => void
 }
 
-export function PatternsView({ patterns, allDecisions, onPatternCreated, onPatternsChanged }: Props) {
+export function PatternsView({ patterns, allDecisions, search, onPatternCreated, onPatternsChanged }: Props) {
   const [addOpen, setAddOpen] = useState(false)
   const [editingPattern, setEditingPattern] = useState<PatternWithDecisions | null>(null)
   const [detailPattern, setDetailPattern] = useState<PatternWithDecisions | null>(null)
@@ -62,6 +63,17 @@ export function PatternsView({ patterns, allDecisions, onPatternCreated, onPatte
   const [description, setDescription] = useState('')
   const [saving, setSaving] = useState(false)
   const { seenIds, markSeen } = useSeenDecisions()
+
+  const filteredPatterns = useMemo(() => {
+    if (!search.trim()) return patterns
+    const q = search.toLowerCase()
+    return patterns.filter(
+      (p) =>
+        p.name.toLowerCase().includes(q) ||
+        (p.description ?? '').toLowerCase().includes(q) ||
+        p.decisions.some((d) => d.title.toLowerCase().includes(q))
+    )
+  }, [patterns, search])
 
   function openAdd() {
     setEditingPattern(null)
@@ -129,10 +141,12 @@ export function PatternsView({ patterns, allDecisions, onPatternCreated, onPatte
 
       {/* ── Page header ─────────────────────────── */}
       <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-xl font-semibold tracking-tight">Design Patterns</h1>
-          <p className="text-sm text-muted-foreground mt-0.5">
-            {patterns.length} pattern{patterns.length !== 1 ? 's' : ''}
+        <div className="flex flex-col gap-1">
+          <h1 className="text-[30px] font-light tracking-[-0.3px]">Design Patterns</h1>
+          <p className="text-sm text-muted-foreground">
+            {search.trim() && filteredPatterns.length !== patterns.length
+              ? `${filteredPatterns.length} of ${patterns.length} pattern${patterns.length !== 1 ? 's' : ''}`
+              : `${patterns.length} pattern${patterns.length !== 1 ? 's' : ''}`}
           </p>
         </div>
         <Button onClick={openAdd} className="gap-1.5 shrink-0">
@@ -148,9 +162,14 @@ export function PatternsView({ patterns, allDecisions, onPatternCreated, onPatte
           <p className="font-medium">No patterns yet</p>
           <p className="text-sm mt-1 opacity-70">Create a pattern to start grouping decisions.</p>
         </div>
+      ) : filteredPatterns.length === 0 ? (
+        <div className="flex flex-col items-center justify-center py-24 text-center text-muted-foreground">
+          <Layers className="h-10 w-10 mb-3 opacity-20" />
+          <p className="font-medium">No patterns match your search.</p>
+        </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
-          {patterns.map((pattern) => (
+          {filteredPatterns.map((pattern) => (
             <PatternCard
               key={pattern.id}
               pattern={pattern}
@@ -173,7 +192,7 @@ export function PatternsView({ patterns, allDecisions, onPatternCreated, onPatte
           </DialogHeader>
           <div className="flex flex-col gap-5 px-6 py-5">
             <div className="flex flex-col gap-2">
-              <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+              <Label className="font-mono text-xs font-medium text-muted-foreground uppercase tracking-wide">
                 Name
               </Label>
               <Input
@@ -185,7 +204,7 @@ export function PatternsView({ patterns, allDecisions, onPatternCreated, onPatte
               />
             </div>
             <div className="flex flex-col gap-2">
-              <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+              <Label className="font-mono text-xs font-medium text-muted-foreground uppercase tracking-wide">
                 Description
               </Label>
               <Textarea

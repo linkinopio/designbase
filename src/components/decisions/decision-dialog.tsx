@@ -47,6 +47,9 @@ export function DecisionDialog({
   const [imagePreview, setImagePreview] = useState<string | null>(null)
   const [newPatternName, setNewPatternName] = useState('')
   const [newTagName, setNewTagName] = useState('')
+  // Patterns created inline during this session — kept separate so they appear
+  // immediately without waiting for the parent state to propagate back down.
+  const [sessionPatterns, setSessionPatterns] = useState<Pattern[]>([])
   const [uploading, setUploading] = useState(false)
   const [saving, setSaving] = useState(false)
   const [isDragging, setIsDragging] = useState(false)
@@ -77,6 +80,7 @@ export function DecisionDialog({
       }
       setNewPatternName('')
       setNewTagName('')
+      setSessionPatterns([])
     }
   }, [open, decision])
 
@@ -141,9 +145,10 @@ export function DecisionDialog({
     }
     try {
       const pattern = await createPattern(name)
-      onPatternCreated(pattern)
+      setSessionPatterns((prev) => [...prev, pattern])
       setSelectedPatterns((prev) => [...prev, pattern])
       setNewPatternName('')
+      onPatternCreated(pattern)
       toast.success(`Pattern "${name}" created`)
     } catch (err) {
       toast.error(err instanceof Error ? err.message : 'Failed to create pattern')
@@ -283,12 +288,12 @@ export function DecisionDialog({
                     key={s}
                     type="button"
                     onClick={() => setStatus(s)}
-                    className={`flex-1 py-2 rounded-lg text-sm font-medium border transition-all ${
+                    className={`flex-1 py-2 rounded-lg text-sm font-medium border transition-all duration-150 ease-in-out cursor-pointer ${
                       status === s
                         ? s === 'approved'
                           ? 'bg-status-green-bg text-status-green border-status-green/20'
-                          : 'bg-status-amber-bg text-status-amber border-status-amber/20'
-                        : 'bg-background text-muted-foreground border-border hover:text-foreground hover:border-foreground/30'
+                          : 'bg-muted text-muted-foreground border-border'
+                        : 'bg-background text-muted-foreground border-border hover:bg-muted hover:text-foreground hover:border-foreground/25'
                     }`}
                   >
                     {s === 'approved' ? 'Approved' : 'Under Review'}
@@ -301,7 +306,7 @@ export function DecisionDialog({
             <div className="flex flex-col gap-2">
               <FieldLabel>Related Patterns</FieldLabel>
               <PillSelector
-                items={patterns}
+                items={[...patterns, ...sessionPatterns.filter((s) => !patterns.some((p) => p.id === s.id))]}
                 selected={selectedPatterns}
                 onToggle={togglePattern}
                 newValue={newPatternName}
@@ -409,7 +414,7 @@ export function DecisionDialog({
 
 function FieldLabel({ children }: { children: React.ReactNode }) {
   return (
-    <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+    <Label className="font-mono text-xs font-medium text-muted-foreground uppercase tracking-wide">
       {children}
     </Label>
   )
@@ -455,10 +460,10 @@ function PillSelector<T extends { id: string; name: string }>({
                 key={item.id}
                 type="button"
                 onClick={() => onToggle(item)}
-                className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium border transition-all ${
+                className={`inline-flex items-center gap-1 px-2.5 py-2 rounded-full text-xs font-medium border transition-all duration-150 ease-in-out cursor-pointer ${
                   isSelected
-                    ? 'bg-foreground text-background border-foreground'
-                    : 'bg-background text-muted-foreground border-border hover:border-foreground/40 hover:text-foreground'
+                    ? 'bg-foreground text-background border-foreground hover:bg-foreground/85'
+                    : 'bg-background text-muted-foreground border-border hover:bg-[#F0EEE8] hover:border-foreground/30 hover:text-foreground'
                 }`}
               >
                 {item.name}

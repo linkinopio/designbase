@@ -4,7 +4,6 @@ import { useState } from 'react'
 import Image from 'next/image'
 import type { DecisionWithTags } from '@/lib/types'
 import { deleteDecision } from '@/lib/actions/decisions'
-import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
@@ -53,7 +52,7 @@ export function DecisionCard({ decision, onClick, onEdit, onDeleted }: Props) {
   return (
     <>
       <div
-        className="group flex flex-col rounded-xl bg-card ring-1 ring-foreground/10 overflow-hidden hover:ring-foreground/20 hover:shadow-md transition-all cursor-pointer"
+        className="group flex flex-col rounded-xl bg-card ring-1 ring-foreground/10 overflow-hidden hover:ring-foreground/20 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-150 ease-in-out cursor-pointer"
         onClick={onClick}
       >
         {/* Image area */}
@@ -76,8 +75,8 @@ export function DecisionCard({ decision, onClick, onEdit, onDeleted }: Props) {
         {/* Body */}
         <div className="flex flex-col gap-3 p-4 flex-1">
           {/* Header row */}
-          <div className="flex items-start justify-between gap-2">
-            <h3 className="font-semibold text-sm leading-snug line-clamp-2 flex-1">
+          <div className="flex items-center justify-between gap-2">
+            <h3 className="font-sans font-semibold text-sm leading-snug line-clamp-2 flex-1 min-w-0">
               {decision.title}
             </h3>
             <DropdownMenu>
@@ -115,21 +114,21 @@ export function DecisionCard({ decision, onClick, onEdit, onDeleted }: Props) {
             {decision.description}
           </p>
 
-          {/* Meta: status + patterns */}
-          <div className="flex flex-wrap gap-1.5">
-            <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium border ${
-              decision.status === 'approved'
-                ? 'bg-status-green-bg text-status-green border-status-green/20'
-                : 'bg-status-amber-bg text-status-amber border-status-amber/20'
-            }`}>
-              {decision.status === 'approved' ? 'Approved' : 'Under Review'}
-            </span>
-            {decision.patterns?.map((p) => (
-              <Badge key={p.id} variant="outline">{p.name}</Badge>
-            ))}
-          </div>
+          {/* Patterns — amber */}
+          {decision.patterns && decision.patterns.length > 0 && (
+            <div className="flex flex-wrap gap-1.5">
+              {decision.patterns.map((p) => (
+                <span
+                  key={p.id}
+                  className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-status-amber-bg text-status-amber border border-status-amber/20"
+                >
+                  {p.name}
+                </span>
+              ))}
+            </div>
+          )}
 
-          {/* Tags */}
+          {/* Tags — blue */}
           {decision.tags && decision.tags.length > 0 && (
             <div className="flex flex-wrap gap-1">
               {decision.tags.map((tag) => (
@@ -144,7 +143,7 @@ export function DecisionCard({ decision, onClick, onEdit, onDeleted }: Props) {
           )}
 
           {/* Timestamp */}
-          <p className="text-xs text-muted-foreground/60 mt-auto pt-1">
+          <p className="font-mono text-xs text-muted-foreground/60 mt-auto">
             {formatDistanceToNow(decision.created_at)}
           </p>
         </div>

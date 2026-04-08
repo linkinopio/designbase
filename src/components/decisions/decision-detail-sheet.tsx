@@ -12,7 +12,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
-import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Pencil, Trash2, CalendarDays } from 'lucide-react'
 import { toast } from 'sonner'
@@ -29,6 +28,7 @@ interface Props {
 export function DecisionDetailSheet({ decision, open, onOpenChange, onEdit, onDeleted }: Props) {
   const [deleteOpen, setDeleteOpen] = useState(false)
   const [deleting, setDeleting] = useState(false)
+  const [imageOpen, setImageOpen] = useState(false)
 
   async function handleDelete() {
     if (!decision) return
@@ -62,14 +62,14 @@ export function DecisionDetailSheet({ decision, open, onOpenChange, onEdit, onDe
             <div className="flex flex-col gap-6 flex-[3] overflow-y-auto px-7 py-7 border-r border-border/60">
 
               {/* Title + status */}
-              <div className="pr-6">
-                <h2 className="text-xl font-bold leading-snug">{decision?.title}</h2>
-                <div className="flex items-center gap-2 mt-2.5 flex-wrap">
+              <div className="flex flex-col gap-2.5 pr-6">
+                <h2 className="font-sans text-xl font-bold leading-snug">{decision?.title}</h2>
+                <div className="flex items-center gap-2 flex-wrap">
                   {decision && (
                     <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${
                       isApproved
                         ? 'bg-status-green-bg text-status-green border-status-green/20'
-                        : 'bg-status-amber-bg text-status-amber border-status-amber/20'
+                        : 'bg-muted text-muted-foreground border-border'
                     }`}>
                       {isApproved ? 'Approved' : 'Under Review'}
                     </span>
@@ -98,14 +98,22 @@ export function DecisionDetailSheet({ decision, open, onOpenChange, onEdit, onDe
               {/* Image */}
               {decision?.image_url && (
                 <Section label="Visual Example">
-                  <div className="rounded-lg overflow-hidden ring-1 ring-foreground/10">
+                  <div
+                    className="group/img rounded-lg overflow-hidden ring-1 ring-foreground/10 relative cursor-pointer"
+                    onClick={() => setImageOpen(true)}
+                  >
                     <Image
                       src={decision.image_url}
                       alt={decision.title}
                       width={600}
                       height={400}
-                      className="w-full object-contain bg-muted"
+                      className="w-full object-contain bg-muted transition-transform duration-200 group-hover/img:scale-[1.02]"
                     />
+                    <div className="absolute inset-0 bg-black/0 group-hover/img:bg-black/20 transition-colors duration-200 flex items-center justify-center">
+                      <span className="opacity-0 group-hover/img:opacity-100 transition-opacity duration-200 text-white text-xs font-medium bg-black/40 px-2.5 py-1 rounded-full backdrop-blur-sm">
+                        View full image
+                      </span>
+                    </div>
                   </div>
                 </Section>
               )}
@@ -119,7 +127,12 @@ export function DecisionDetailSheet({ decision, open, onOpenChange, onEdit, onDe
                 <Section label="Related Patterns">
                   <div className="flex flex-wrap gap-1.5">
                     {decision.patterns.map((p) => (
-                      <Badge key={p.id} variant="outline">{p.name}</Badge>
+                      <span
+                        key={p.id}
+                        className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-status-amber-bg text-status-amber border border-status-amber/20"
+                      >
+                        {p.name}
+                      </span>
                     ))}
                   </div>
                 </Section>
@@ -192,6 +205,24 @@ export function DecisionDetailSheet({ decision, open, onOpenChange, onEdit, onDe
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Image lightbox */}
+      {decision?.image_url && (
+        <Dialog open={imageOpen} onOpenChange={setImageOpen}>
+          <DialogContent className="sm:max-w-none w-[min(90vw,1200px)] p-2 bg-black/90 border-0 ring-0" showCloseButton>
+            <DialogHeader className="sr-only">
+              <DialogTitle>{decision.title}</DialogTitle>
+            </DialogHeader>
+            <Image
+              src={decision.image_url}
+              alt={decision.title}
+              width={1200}
+              height={800}
+              className="w-full h-auto max-h-[85vh] object-contain rounded-md"
+            />
+          </DialogContent>
+        </Dialog>
+      )}
     </>
   )
 }
@@ -199,7 +230,7 @@ export function DecisionDetailSheet({ decision, open, onOpenChange, onEdit, onDe
 function Section({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div className="flex flex-col gap-2">
-      <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">{label}</p>
+      <p className="font-mono text-xs font-medium text-muted-foreground uppercase tracking-wide">{label}</p>
       {children}
     </div>
   )
