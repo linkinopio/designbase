@@ -1,7 +1,5 @@
 'use client'
 
-'use client'
-
 import { useState, useEffect, useRef } from 'react'
 import Image from 'next/image'
 import type { DecisionWithTags, Pattern, Tag, Status } from '@/lib/types'
@@ -147,8 +145,8 @@ export function DecisionDialog({
       setSelectedPatterns((prev) => [...prev, pattern])
       setNewPatternName('')
       toast.success(`Pattern "${name}" created`)
-    } catch {
-      toast.error('Failed to create pattern')
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Failed to create pattern')
     }
   }
 
@@ -188,8 +186,7 @@ export function DecisionDialog({
     )
   }
 
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault()
+  async function handleSubmit() {
     if (!description.trim()) { toast.error('Description is required'); return }
     if (!title.trim()) { toast.error('Title is required'); return }
 
@@ -236,7 +233,7 @@ export function DecisionDialog({
           </DialogTitle>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit}>
+        <div>
           <div className="flex flex-col gap-6 px-7 py-6">
 
             {/* Title */}
@@ -396,12 +393,12 @@ export function DecisionDialog({
             <Button type="button" variant="outline" size="sm" onClick={() => onOpenChange(false)}>
               Cancel
             </Button>
-            <Button type="submit" size="sm" disabled={saving || uploading}>
+            <Button type="button" size="sm" disabled={saving || uploading} onClick={handleSubmit}>
               {saving && <Loader2 className="h-3.5 w-3.5 animate-spin mr-1.5" />}
               {isEdit ? 'Save changes' : 'Create decision'}
             </Button>
           </div>
-        </form>
+        </div>
 
       </DialogContent>
     </Dialog>
@@ -439,13 +436,19 @@ function PillSelector<T extends { id: string; name: string }>({
   placeholder,
   emptyHint,
 }: PillSelectorProps<T>) {
+  // Include selected items that haven't propagated to the items list yet
+  const displayItems = [
+    ...items,
+    ...selected.filter((s) => !items.some((i) => i.id === s.id)),
+  ]
+
   return (
     <div className="flex flex-col gap-2">
-      {items.length === 0 && selected.length === 0 ? (
+      {displayItems.length === 0 ? (
         <p className="text-xs text-muted-foreground/60">{emptyHint}</p>
       ) : (
         <div className="flex flex-wrap gap-1.5">
-          {items.map((item) => {
+          {displayItems.map((item) => {
             const isSelected = selected.some((s) => s.id === item.id)
             return (
               <button

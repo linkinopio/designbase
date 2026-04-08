@@ -23,7 +23,7 @@ export async function createTag(name: string) {
     .insert({ name })
     .select()
     .single()
-  if (error) throw error
+  if (error) throw new Error(error.message)
   revalidatePath('/')
   return data
 }

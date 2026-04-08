@@ -63,7 +63,9 @@ export function AppShell({ user, initialDecisions, initialPatterns, initialTags 
   }
 
   function handlePatternCreated(p: Pattern) {
-    // flatPatterns is derived, no extra state needed — setPatterns handles it
+    setPatterns((prev) =>
+      [...prev, { ...p, decisions: [], tags: [] }].sort((a, b) => a.name.localeCompare(b.name))
+    )
   }
 
   function handleTagCreated(t: Tag) {

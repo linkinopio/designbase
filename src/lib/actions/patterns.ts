@@ -67,7 +67,7 @@ export async function createPattern(name: string, description?: string | null) {
     .insert({ name, description: description ?? null })
     .select()
     .single()
-  if (error) throw error
+  if (error) throw new Error(error.message)
   revalidatePath('/')
   return data
 }
