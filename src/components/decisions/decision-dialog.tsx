@@ -13,6 +13,7 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { X, Plus, Loader2, Upload } from 'lucide-react'
 import { toast } from 'sonner'
+import { SimilarDecisions } from '@/components/decisions/similar-decisions'
 
 interface Props {
   open: boolean
@@ -23,6 +24,7 @@ interface Props {
   onPatternCreated: (p: Pattern) => void
   onTagCreated: (t: Tag) => void
   onSaved: (d: DecisionWithTags) => void
+  onViewDecision?: (id: string) => void
 }
 
 export function DecisionDialog({
@@ -34,6 +36,7 @@ export function DecisionDialog({
   onPatternCreated,
   onTagCreated,
   onSaved,
+  onViewDecision,
 }: Props) {
   const isEdit = !!decision
 
@@ -264,6 +267,15 @@ export function DecisionDialog({
                 required
               />
             </div>
+
+            {/* Duplicate warning — triggers after user types description, only when creating */}
+            {!isEdit && onViewDecision && (
+              <SimilarDecisions
+                title={title}
+                description={description}
+                onView={(id) => { onOpenChange(false); onViewDecision(id) }}
+              />
+            )}
 
             {/* Notes */}
             <div className="flex flex-col gap-2">

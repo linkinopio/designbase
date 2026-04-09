@@ -1,13 +1,10 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, createContext, useContext } from 'react'
+import { usePathname } from 'next/navigation'
+import Link from 'next/link'
 import type { User } from '@supabase/supabase-js'
-import type { DecisionWithTags, PatternWithDecisions, Pattern, Tag } from '@/lib/types'
 import { logout } from '@/lib/actions/auth'
-import { DecisionsView } from '@/components/decisions/decisions-view'
-import { PatternsView } from '@/components/patterns/patterns-view'
-import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -16,7 +13,7 @@ import {
 } from '@/components/ui/dropdown-menu'
 import {
   LayoutGrid,
-  Layers,
+  CircleAlert,
   PanelLeftClose,
   PanelLeftOpen,
   LogOut,
@@ -24,64 +21,32 @@ import {
   Search,
 } from 'lucide-react'
 
+/* ── Search context ─────────────────────────────────────────── */
+
+const SearchContext = createContext('')
+export function useSearch() { return useContext(SearchContext) }
+
+/* ── Component ──────────────────────────────────────────────── */
+
 interface Props {
   user: User
-  initialDecisions: DecisionWithTags[]
-  initialPatterns: PatternWithDecisions[]
-  initialTags: Tag[]
+  children: React.ReactNode
 }
 
-export function AppShell({ user, initialDecisions, initialPatterns, initialTags }: Props) {
-  const [decisions, setDecisions] = useState(initialDecisions)
-  const [patterns, setPatterns] = useState(initialPatterns)
-  const [tags, setTags] = useState(initialTags)
+const NAV_ITEMS = [
+  { href: '/', label: 'Decisions', icon: LayoutGrid },
+  { href: '/issues', label: 'Issues', icon: CircleAlert },
+]
+
+export function AppShell({ user, children }: Props) {
   const [sidebarOpen, setSidebarOpen] = useState(true)
-  const [activeTab, setActiveTab] = useState<'decisions' | 'patterns'>('decisions')
   const [search, setSearch] = useState('')
-
-  // Flat pattern list for the DecisionDialog pill selectors
-  const flatPatterns: Pattern[] = patterns.map(({ decisions: _, tags: __, ...p }) => p)
-
-  function handleDecisionSaved(decision: DecisionWithTags) {
-    setDecisions((prev) => {
-      const idx = prev.findIndex((d) => d.id === decision.id)
-      if (idx >= 0) { const next = [...prev]; next[idx] = decision; return next }
-      return [decision, ...prev]
-    })
-    // Update linked counts in patterns
-    setPatterns((prev) => prev.map((p) => {
-      const wasLinked = p.decisions.some((d) => d.id === decision.id)
-      const isLinked = decision.patterns.some((dp) => dp.id === p.id)
-      if (wasLinked && !isLinked) return { ...p, decisions: p.decisions.filter((d) => d.id !== decision.id) }
-      if (!wasLinked && isLinked) return { ...p, decisions: [...p.decisions, decision] }
-      if (wasLinked && isLinked) return { ...p, decisions: p.decisions.map((d) => d.id === decision.id ? decision : d) }
-      return p
-    }))
-  }
-
-  function handleDecisionDeleted(id: string) {
-    setDecisions((prev) => prev.filter((d) => d.id !== id))
-    setPatterns((prev) => prev.map((p) => ({ ...p, decisions: p.decisions.filter((d) => d.id !== id) })))
-  }
-
-  function handlePatternCreated(p: Pattern) {
-    setPatterns((prev) =>
-      [...prev, { ...p, decisions: [], tags: [] }].sort((a, b) => a.name.localeCompare(b.name))
-    )
-  }
-
-  function handleTagCreated(t: Tag) {
-    setTags((prev) => [...prev, t].sort((a, b) => a.name.localeCompare(b.name)))
-  }
+  const pathname = usePathname()
 
   return (
-    <Tabs
-      orientation="vertical"
-      value={activeTab}
-      onValueChange={(v) => setActiveTab(v as 'decisions' | 'patterns')}
-      className="h-screen w-full overflow-hidden"
-    >
-      <div className="flex h-full">
+    <SearchContext.Provider value={search}>
+      <div className="h-screen w-full overflow-hidden flex">
+
         {/* ── Sidebar ─────────────────────────────── */}
         <aside
           className={`flex flex-col shrink-0 border-r border-border bg-card transition-all duration-200 overflow-hidden ${
@@ -103,27 +68,27 @@ export function AppShell({ user, initialDecisions, initialPatterns, initialTags 
             </button>
           </div>
 
-          {/* Nav tabs */}
+          {/* Nav links */}
           <div className="flex-1 overflow-y-auto py-3 px-2">
-            <TabsList
-              variant="line"
-              className="w-full flex-col gap-0.5 bg-transparent p-0"
-            >
-              <TabsTrigger
-                value="decisions"
-                className="w-full justify-start gap-2.5 px-3 py-2 h-9 rounded-lg text-sm"
-              >
-                <LayoutGrid className="h-4 w-4 shrink-0" />
-                Decisions
-              </TabsTrigger>
-              <TabsTrigger
-                value="patterns"
-                className="w-full justify-start gap-2.5 px-3 py-2 h-9 rounded-lg text-sm"
-              >
-                <Layers className="h-4 w-4 shrink-0" />
-                Patterns
-              </TabsTrigger>
-            </TabsList>
+            <nav className="flex flex-col gap-0.5">
+              {NAV_ITEMS.map(({ href, label, icon: Icon }) => {
+                const active = pathname === href
+                return (
+                  <Link
+                    key={href}
+                    href={href}
+                    className={`flex items-center gap-2.5 px-3 py-2 h-9 rounded-lg text-sm transition-all duration-150 ease-in-out cursor-pointer ${
+                      active
+                        ? 'bg-accent text-foreground font-medium'
+                        : 'text-muted-foreground hover:bg-muted hover:text-foreground'
+                    }`}
+                  >
+                    <Icon className="h-4 w-4 shrink-0" />
+                    {label}
+                  </Link>
+                )
+              })}
+            </nav>
           </div>
 
           {/* User area */}
@@ -152,7 +117,7 @@ export function AppShell({ user, initialDecisions, initialPatterns, initialTags 
 
         {/* ── Main content ─────────────────────────── */}
         <div className="flex flex-col flex-1 min-w-0 overflow-hidden">
-          {/* Top bar — always visible */}
+          {/* Top bar */}
           <div className="h-14 border-b border-border flex items-center px-4 gap-3 shrink-0">
             {!sidebarOpen && (
               <>
@@ -163,7 +128,7 @@ export function AppShell({ user, initialDecisions, initialPatterns, initialTags 
                 >
                   <PanelLeftOpen className="h-4 w-4" />
                 </button>
-                <span className="text-base font-bold tracking-tight select-none shrink-0">
+                <span className="font-heading text-base font-bold select-none shrink-0">
                   <span className="text-foreground">Design</span>
                   <span className="text-primary">Base</span>
                 </span>
@@ -175,37 +140,18 @@ export function AppShell({ user, initialDecisions, initialPatterns, initialTags 
                 type="text"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                placeholder="Search decisions, patterns, elements…"
+                placeholder="Search…"
                 className="w-full h-10 pl-9 pr-4 rounded-full border border-[#E2DDD5] bg-white text-sm text-foreground placeholder:text-[#9C9186] outline-none focus:border-foreground/30 transition-colors cursor-pointer focus:cursor-text"
               />
             </div>
           </div>
 
-          <main className="flex-1 overflow-y-auto">
-            {activeTab === 'decisions' && (
-              <DecisionsView
-                decisions={decisions}
-                patterns={flatPatterns}
-                tags={tags}
-                search={search}
-                onDecisionSaved={handleDecisionSaved}
-                onDecisionDeleted={handleDecisionDeleted}
-                onPatternCreated={handlePatternCreated}
-                onTagCreated={handleTagCreated}
-              />
-            )}
-            {activeTab === 'patterns' && (
-              <PatternsView
-                patterns={patterns}
-                allDecisions={decisions}
-                search={search}
-                onPatternCreated={handlePatternCreated}
-                onPatternsChanged={setPatterns}
-              />
-            )}
+          <main className="flex-1 overflow-y-auto flex flex-col">
+            {children}
           </main>
         </div>
+
       </div>
-    </Tabs>
+    </SearchContext.Provider>
   )
 }

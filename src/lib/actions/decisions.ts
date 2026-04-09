@@ -3,6 +3,18 @@
 import { revalidatePath } from 'next/cache'
 import { createClient } from '@/lib/supabase/server'
 import type { Status } from '@/lib/types'
+import { generateEmbedding, buildEmbeddingText } from '@/lib/embeddings'
+
+/** Generates and stores an embedding for a decision. Failures are silent. */
+async function storeEmbedding(id: string, title: string, description: string) {
+  try {
+    const supabase = await createClient()
+    const embedding = await generateEmbedding(buildEmbeddingText(title, description))
+    await supabase.from('decisions').update({ embedding }).eq('id', id)
+  } catch (err) {
+    console.warn('[storeEmbedding] skipped:', err)
+  }
+}
 
 export async function getDecisions() {
   const supabase = await createClient()
@@ -93,6 +105,7 @@ export async function createDecision(input: {
   }
 
   revalidatePath('/')
+  void storeEmbedding(decision.id, input.title, input.description)
   return decision
 }
 
@@ -144,6 +157,7 @@ export async function updateDecision(
 
   revalidatePath('/')
   revalidatePath(`/decisions/${id}`)
+  void storeEmbedding(id, input.title, input.description)
 }
 
 export async function deleteDecision(id: string) {

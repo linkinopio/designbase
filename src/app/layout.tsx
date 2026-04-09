@@ -1,11 +1,11 @@
 import type { Metadata } from 'next'
-import { Fraunces, DM_Sans, DM_Mono } from 'next/font/google'
+import { Outfit, DM_Sans, DM_Mono } from 'next/font/google'
 import './globals.css'
 import { Toaster } from '@/components/ui/sonner'
 
-const fraunces = Fraunces({
+const outfit = Outfit({
   subsets: ['latin'],
-  variable: '--font-fraunces',
+  variable: '--font-outfit',
   display: 'swap',
 })
 
@@ -34,7 +34,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className="h-full">
-      <body className={`${fraunces.variable} ${dmSans.variable} ${dmMono.variable} h-full antialiased`}>
+      <body className={`${outfit.variable} ${dmSans.variable} ${dmMono.variable} h-full antialiased`}>
         {children}
         <Toaster richColors position="bottom-left" />
       </body>
